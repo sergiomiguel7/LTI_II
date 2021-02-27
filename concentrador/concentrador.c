@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "api.h"
-#include "rs232.h"
+#include "rs232/rs232.h"
 
 //define functions
 void openSerial();
