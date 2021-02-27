@@ -3,6 +3,8 @@
 #define PORT 8000
 #define CONFIG_FILE "config.txt"
 
+#include <sys/socket.h>
+
 
 //vars para socket
 struct sockaddr_in servAddr, cliaddr;

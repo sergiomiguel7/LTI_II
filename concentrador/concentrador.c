@@ -1,9 +1,18 @@
+
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include "api.h"
 
-int serverFd
+//functions declaration 
+int connectSocket();
+
+
+
+int serverFd;
+
 
 int main(){
 
@@ -36,13 +45,13 @@ int connectSocket(){
     // Convert IPv4 address from text to binary form to config socket
 	if (inet_pton(AF_INET, ADDR, &servAddr.sin_addr) <= 0)
 	{
-		printf("\nInvalid address/ Address not supported \n");
+		printf("Invalid address/ Address not supported \n");
 		return -1;
 	}
     //servAddr configured with sucess, now connect socket
 	if (connect(sock, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
 	{
-		printf("\nConnection Failed \n");
+		printf("Connection Failed \n");
 		return -1;
 	}
 
