@@ -2,58 +2,75 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include "api.h"
+#include "rs232.h"
 
-//functions declaration 
-int connectSocket();
+//define functions
+void openSerial();
+void readConfigFile();
 
+int main()
+{
 
+    readConfigFile();
 
-int serverFd;
-
-
-int main(){
-
-    sockManager = connectSocket();
-    if(sockManager > 0){
-        printf("Socket connected");
-    }
-
+    int coms = comEnumerate();
+    openSerial();
 }
 
 
 /*
-*   function to create a ipv4 socket connection
-*   returns the socket file descriptor
-*/
-int connectSocket(){
-    int sock = 0;
+* function to open the config file declarated portSerial to receive
+* data from arduino
+**/
+void openSerial()
+{
 
-    //try to create a new default socket with ipv4 domain
-    if(sock = socket(AF_INET, SOCK_STREAM, 0) < 0){
-        printf("Socket creation error \n");
-		return -1;
+    actualConfig.serialNumber = comFindPort(actualConfig.portSerial);
+    if (actualConfig.serialNumber == -1)
+    {
+        actualConfig.serialNumber = 6;
+    }
+    comOpen(actualConfig.serialNumber, 115200);
+}
+
+
+/**
+* function to print the readed configuration
+**/
+void printConfig()
+{
+    printf("Serial Port: %s", actualConfig.portSerial);
+}
+
+/**
+ * function reads the config file declarated on api.h
+ * and set all the parameters
+ **/
+void readConfigFile()
+{
+
+    FILE *fd;
+    char *configLine = NULL;
+    int sizeRead, nmrArgs = 0;
+
+    fd = open(CONFIG_FILE, "r");
+    if (fd == NULL)
+    {
+        return -1;
     }
 
-    memset(&servAddr, '0', sizeof(servAddr));
+    sizeRead = getline(configLine, 0, fd);
+    char *token = strtok(configLine, ";");
 
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(PORT);
+    while (token != NULL)
+    {
 
-    // Convert IPv4 address from text to binary form to config socket
-	if (inet_pton(AF_INET, ADDR, &servAddr.sin_addr) <= 0)
-	{
-		printf("Invalid address/ Address not supported \n");
-		return -1;
-	}
-    //servAddr configured with sucess, now connect socket
-	if (connect(sock, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0)
-	{
-		printf("Connection Failed \n");
-		return -1;
-	}
+        //read and store on actualConfig
 
-	return sock;
+        nmrArgs++;
+        token = strtok(NULL, ";");
+    }
+
+    printConfig();
 }
