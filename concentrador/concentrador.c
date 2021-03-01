@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
 #include "api.h"
@@ -10,13 +11,15 @@
 //define functions
 void openSerial();
 void readConfigFile();
+void printConfig();
+int buildStartPacket(char *str, uint32_t pm, uint32_t pa, uint32_t ns);
 
 int main()
 {
     char bufWrite[1024];
     char bufRead[1024];
 
-    buildStartPacket(bufWrite, actualConfig.pm, actualConfig.pa, actualConfig.ns);
+    buildStartPacket(bufWrite, actualConfig.pm, actualConfig.pa, actualConfig.na);
 
     readConfigFile();
 
@@ -42,31 +45,23 @@ void openSerial()
 
 
 /**
-* function to print the readed configuration
-**/
-void printConfig()
-{
-    printf("Serial Port: %s", actualConfig.portSerial);
-}
-
-/**
  * function reads the config file declarated on api.h
  * and set all the parameters
  **/
 void readConfigFile()
 {
-
-    FILE *fd;
-    char *configLine = NULL;
+    int fd = open(CONFIG_FILE, O_RDONLY);
+    char configLine[1024];
     int sizeRead, nmrArgs = 0;
 
-    fd = open(CONFIG_FILE, "r");
-    if (fd == NULL)
+    if (fd < 0)
     {
-        return -1;
+        perror("erro reading file");
+        return;
     }
 
-    sizeRead = getline(configLine, 0, fd);
+    sizeRead = read(fd, configLine, sizeof(configLine));
+
     char *token = strtok(configLine, ";");
 
     while (token != NULL)
@@ -80,6 +75,16 @@ void readConfigFile()
 
     printConfig();
 }
+
+
+/**
+* function to print the readed configuration
+**/
+void printConfig()
+{
+    printf("Serial Port: %s", actualConfig.portSerial);
+}
+
 
 /*
 * build the start packet to send to sensor

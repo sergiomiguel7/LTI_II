@@ -12,7 +12,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "rs232.h"
+#include "rs232/rs232.h"
 #include "api.h"
 
 uint32_t current_timestamp()

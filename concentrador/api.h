@@ -22,8 +22,8 @@ void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
 
 //vars para socket
-struct sockaddr_in servAddr, cliaddr;
-int sockfd;
+//struct sockaddr_in servAddr, cliaddr;
+//int sockfd;
 
 //socket
 int sockManager;
