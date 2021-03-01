@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <time.h>
 #include "api.h"
 #include "rs232/rs232.h"
 
@@ -11,6 +13,10 @@ void readConfigFile();
 
 int main()
 {
+    char bufWrite[1024];
+    char bufRead[1024];
+
+    buildStartPacket(bufWrite, actualConfig.pm, actualConfig.pa, actualConfig.ns);
 
     readConfigFile();
 
@@ -73,4 +79,18 @@ void readConfigFile()
     }
 
     printConfig();
+}
+
+/*
+* build the start packet to send to sensor
+*/
+int buildStartPacket(char *str, uint32_t pm, uint32_t pa, uint32_t ns)
+{
+	str[0] = (char)0;
+	uint32_t ts = current_timestamp();
+	split32(str + 1, ts);
+	split32(str + 5, pm);
+	split32(str + 9, pa);
+	str[13] = ns;
+	return 14;
 }
