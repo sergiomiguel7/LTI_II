@@ -1,6 +1,6 @@
 #define ADDR "127.0.0.1"
 #define PORT 8000
-#define CONFIG_FILE "config.txt"
+#define CONFIG_FILE "../env/config.txt"
 #define SIZE1 256
 #define SIZE2 512
 #define SIZE3 1024
@@ -11,6 +11,7 @@
 
 #include<stdint.h>
 #include<stdbool.h>
+
 
 //utils.c functions
 uint32_t current_timestamp();

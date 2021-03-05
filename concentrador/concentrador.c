@@ -34,7 +34,6 @@ int main()
 **/
 void openSerial()
 {
-
     actualConfig.serialNumber = comFindPort(actualConfig.portSerial);
     if (actualConfig.serialNumber == -1)
     {
@@ -66,7 +65,20 @@ void readConfigFile()
 
     while (token != NULL)
     {
-
+        switch (nmrArgs)
+        {
+        case 0:
+            actualConfig.pm = atoi(token);
+            break;
+        case 1: 
+            actualConfig.pa = atoi(token);
+            break;
+        case 2: 
+            actualConfig.na = atoi(token);
+            break;    
+        default:
+            break;
+        }
         //read and store on actualConfig
 
         nmrArgs++;
@@ -82,7 +94,10 @@ void readConfigFile()
 **/
 void printConfig()
 {
-    printf("Serial Port: %s", actualConfig.portSerial);
+   // printf("Serial Port: %s", actualConfig.portSerial);
+    printf("Period between incoming data from sensor: %d\n", actualConfig.pm);
+    printf("Period between reading from sensor: %d\n", actualConfig.pa);
+    printf("Number of samples before sending stop packet: %d\n", actualConfig.na);
 }
 
 
