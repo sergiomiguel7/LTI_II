@@ -53,9 +53,9 @@ typedef union
 
 
 typedef struct config {
-    int pm; //period between sending DATA 
-    int pa; //period between reading from sensors
-    int na; //numero de amostras
+    uint32_t pm; //period between sending DATA 
+    uint32_t pa; //period between reading from sensors
+    uint8_t na; //numero de amostras
     char portSerial[SIZE1]; //serial port used from arduino when write blueetooth data
     int serialNumber; //index from serial 
 } config;

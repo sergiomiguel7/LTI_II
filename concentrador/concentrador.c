@@ -12,14 +12,15 @@
 void openSerial();
 void readConfigFile();
 void printConfig();
-int buildStartPacket(char *str, uint32_t pm, uint32_t pa, uint32_t ns);
+int buildStartPacket(char *str);
+int buildStopPacket(char *str, uint8_t stopCode);
 
 int main()
 {
     char bufWrite[1024];
     char bufRead[1024];
 
-    buildStartPacket(bufWrite, actualConfig.pm, actualConfig.pa, actualConfig.na);
+    buildStartPacket(bufWrite);
 
     readConfigFile();
 
@@ -101,16 +102,34 @@ void printConfig()
 }
 
 
-/*
+/**
+* @param str - packet to send
+* 
+* @return the number of bytes to send
+* 
 * build the start packet to send to sensor
 */
-int buildStartPacket(char *str, uint32_t pm, uint32_t pa, uint32_t ns)
+int buildStartPacket(char *str)
 {
-	str[0] = (char)0;
+	str[0] = (char)START;
 	uint32_t ts = current_timestamp();
 	split32(str + 1, ts);
-	split32(str + 5, pm);
-	split32(str + 9, pa);
-	str[13] = ns;
+	split32(str + 5, actualConfig.pm);
+	split32(str + 9, actualConfig.pa);
+	str[13] = actualConfig.na;
 	return 14;
+}
+
+/**
+ * @param str - packet to send
+ * @param stopCode - reason to stop code
+ * 
+ * @return the number of bytes to send
+ * 
+ * build the stop packet to send to sendor
+ **/
+int buildStopPacket(char *str, uint8_t stopCode){
+    str[0]=(char)STOP;
+    str[1]=(char)stopCode;
+    return 2;
 }
