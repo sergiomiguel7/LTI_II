@@ -4,11 +4,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/time.h>
+#include <signal.h>
 #include <time.h>
 #include "api.h"
 #include "rs232/rs232.h"
 
 //define functions
+void handler(int sign);
+void closeFiles();
 void openSerial();
 void readConfigFile();
 void printConfig();
@@ -18,6 +21,8 @@ int buildStopPacket(char *str, uint8_t stopCode);
 
 int main()
 {
+    signal(SIGINT, handler);
+
     char bufWrite[1024];
     char bufRead[1024];
 
@@ -26,6 +31,34 @@ int main()
     handleBegin(bufWrite);
 
 
+}
+
+/**
+ * @param sig - signal identifier
+ * 
+ * handles the sigint signal and closes everything 
+ **/
+void handler(int sig){
+    if(sig != SIGINT)
+        return;
+    //stop to sensor    
+    char write[SIZE1];
+    int size = buildStopPacket(write, 0);
+    comWrite(actualConfig.serialNumber, write, size);
+
+    //close all
+    closeFiles();
+    comTerminate();
+}
+
+/**
+* close all files and com ports
+**/
+void closeFiles(){
+    close(fdLogs);
+    close(fdErrors);
+    close(fdData);
+    comCloseAll();
 }
 
 /**
@@ -147,3 +180,4 @@ int buildStopPacket(char *str, uint8_t stopCode)
     str[1]=(char)stopCode;
     return 2;
 }
+
