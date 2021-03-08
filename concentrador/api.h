@@ -7,7 +7,8 @@
 #define START 0
 #define STOP 1
 #define ERROR 2
-#define DATA 3
+#define DATA1 3
+#define DATA2 4
 
 #include<stdint.h>
 #include<stdbool.h>

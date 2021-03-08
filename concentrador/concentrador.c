@@ -12,6 +12,7 @@
 void openSerial();
 void readConfigFile();
 void printConfig();
+void handleBegin(char* str);
 int buildStartPacket(char *str);
 int buildStopPacket(char *str, uint8_t stopCode);
 
@@ -20,12 +21,25 @@ int main()
     char bufWrite[1024];
     char bufRead[1024];
 
-    buildStartPacket(bufWrite);
+    int coms = comEnumerate();
+
+    handleBegin(bufWrite);
+
+
+}
+
+/**
+ * @param str - buffer to write on serial port to arduino
+ * 
+ * this function handles the starter packet
+ **/
+void handleBegin(char* str){
 
     readConfigFile();
-
-    int coms = comEnumerate();
     openSerial();
+    int size = buildStartPacket(str);
+
+    comWrite(actualConfig.serialNumber, str, size);
 }
 
 
@@ -78,10 +92,9 @@ void readConfigFile()
             actualConfig.na = atoi(token);
             break;    
         default:
+            strcpy(actualConfig.portSerial,token);
             break;
         }
-        //read and store on actualConfig
-
         nmrArgs++;
         token = strtok(NULL, ";");
     }
@@ -128,7 +141,8 @@ int buildStartPacket(char *str)
  * 
  * build the stop packet to send to sendor
  **/
-int buildStopPacket(char *str, uint8_t stopCode){
+int buildStopPacket(char *str, uint8_t stopCode)
+{
     str[0]=(char)STOP;
     str[1]=(char)stopCode;
     return 2;
