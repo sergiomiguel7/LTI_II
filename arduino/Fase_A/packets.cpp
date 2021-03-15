@@ -1,22 +1,15 @@
 #include "packets.h"
 #include "Arduino.h"
-
-void clearPacket(char packet[]) {
-  memset(packet, -1 , sizeof(packet));
-}
-
+#include "../../concentrador/api.h"
 
 /*
-  True -> Sucesso
-  False -> Erro
+packet[] -> Pacote á qual vai ser adiciona o value
+value -> conteudo do  tipo char que irá ser adicionado ao pacote
+pos -> apontador para a proxima posição livre no pacote
 */
-bool addChar(char packet[], char value) {
-  int i = 0;
-  while (packet[i] != -1) {
-    i++;
-    if (i > sizeof(packet))
-      return false;
+void addChar(char packet[], char value, int pos) {
+  if (pos < 1028) {
+    packet[pos] = value;
+    pos++;
   }
-  packet[i] = value;
-  return true;
 }

@@ -1,5 +1,3 @@
 #include "Arduino.h"
 
-void clearPacket(char packet[]);
-
-bool addChar(char packet[], char value);
+void addChar(char packet[], char value, int pos);
