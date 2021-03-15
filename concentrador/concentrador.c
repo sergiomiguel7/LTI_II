@@ -15,22 +15,22 @@ void closeFiles();
 void openSerial();
 void readConfigFile();
 void printConfig();
-void handleBegin(char* str);
-int buildStartPacket(char *str);
+void handleBegin(char *str);
+int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 
 int main()
 {
     signal(SIGINT, handler);
+    configuredPorts = 0;
 
     char bufWrite[1024];
     char bufRead[1024];
-
+    
     int coms = comEnumerate();
+    readConfigFile();
 
     handleBegin(bufWrite);
-
-
 }
 
 /**
@@ -38,14 +38,21 @@ int main()
  * 
  * handles the sigint signal and closes everything 
  **/
-void handler(int sig){
-    if(sig != SIGINT)
+void handler(int sig)
+{
+    if (sig != SIGINT)
         return;
-    //stop to sensor    
-    char write[SIZE1];
-    int size = buildStopPacket(write, 0);
-    comWrite(actualConfig.serialNumber, write, size);
 
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
+            //stop to sensor
+            char write[SIZE1];
+            int size = buildStopPacket(write, 0);
+            comWrite(actualConfig[i].serialNumber, write, size);
+        }
+    }
     //close all
     closeFiles();
     comTerminate();
@@ -54,7 +61,8 @@ void handler(int sig){
 /**
 * close all files and com ports
 **/
-void closeFiles(){
+void closeFiles()
+{
     close(fdLogs);
     close(fdErrors);
     close(fdData);
@@ -66,15 +74,18 @@ void closeFiles(){
  * 
  * this function handles the starter packet
  **/
-void handleBegin(char* str){
-
-    readConfigFile();
-    openSerial();
-    int size = buildStartPacket(str);
-
-    comWrite(actualConfig.serialNumber, str, size);
+void handleBegin(char *str)
+{
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        openSerial();
+        if (actualConfig[i].opened)
+        {
+            int size = buildStartPacket(str, i);
+            comWrite(actualConfig[i].serialNumber, str, size);
+        }
+    }
 }
-
 
 /*
 * function to open the config file declarated portSerial to receive
@@ -82,14 +93,18 @@ void handleBegin(char* str){
 **/
 void openSerial()
 {
-    actualConfig.serialNumber = comFindPort(actualConfig.portSerial);
-    if (actualConfig.serialNumber == -1)
+    for (int i = 0; i < configuredPorts; i++)
     {
-        actualConfig.serialNumber = 6;
+        actualConfig[i].serialNumber = comFindPort(actualConfig[i].portSerial);
+        if (actualConfig[i].serialNumber == -1)
+        {
+            actualConfig[i].serialNumber = 6;
+        }
+        int status = comOpen(actualConfig[i].serialNumber, 115200);
+        if (status)
+            actualConfig[i].opened = status;
     }
-    comOpen(actualConfig.serialNumber, 115200);
 }
-
 
 /**
  * function reads the config file declarated on api.h
@@ -116,37 +131,37 @@ void readConfigFile()
         switch (nmrArgs)
         {
         case 0:
-            actualConfig.pm = atoi(token);
+            actualConfig[configuredPorts].pm = atoi(token);
             break;
-        case 1: 
-            actualConfig.pa = atoi(token);
+        case 1:
+            actualConfig[configuredPorts].pa = atoi(token);
             break;
-        case 2: 
-            actualConfig.na = atoi(token);
-            break;    
-        default:
-            strcpy(actualConfig.portSerial,token);
+        case 2:
+            actualConfig[configuredPorts].na = atoi(token);
+            break;
+        default:            strcpy(actualConfig[configuredPorts].portSerial, token);
+            actualConfig[configuredPorts].opened = 0;
+            configuredPorts++;
             break;
         }
-        nmrArgs++;
+
+        nmrArgs > 2 ? nmrArgs = 0 : nmrArgs++;
         token = strtok(NULL, ";");
     }
 
     printConfig();
 }
 
-
 /**
 * function to print the readed configuration
 **/
 void printConfig()
 {
-   // printf("Serial Port: %s", actualConfig.portSerial);
-    printf("Period between incoming data from sensor: %d\n", actualConfig.pm);
-    printf("Period between reading from sensor: %d\n", actualConfig.pa);
-    printf("Number of samples before sending stop packet: %d\n", actualConfig.na);
+    printf("Serial Port: %s\n", actualConfig[0].portSerial);
+    printf("Period between incoming data from sensor: %d\n", actualConfig[0].pm);
+    printf("Period between reading from sensor: %d\n", actualConfig[0].pa);
+    printf("Number of samples before sending stop packet: %d\n", actualConfig[0].na);
 }
-
 
 /**
 * @param str - packet to send
@@ -155,15 +170,15 @@ void printConfig()
 * 
 * build the start packet to send to sensor
 */
-int buildStartPacket(char *str)
+int buildStartPacket(char *str, int index)
 {
-	str[0] = (char)START;
-	uint32_t ts = current_timestamp();
-	split32(str + 1, ts);
-	split32(str + 5, actualConfig.pm);
-	split32(str + 9, actualConfig.pa);
-	str[13] = actualConfig.na;
-	return 14;
+    str[0] = (char)START;
+    uint32_t ts = current_timestamp();
+    split32(str + 1, ts);
+    split32(str + 5, actualConfig[index].pm);
+    split32(str + 9, actualConfig[index].pa);
+    str[13] = actualConfig[index].na;
+    return 14;
 }
 
 /**
@@ -176,8 +191,7 @@ int buildStartPacket(char *str)
  **/
 int buildStopPacket(char *str, uint8_t stopCode)
 {
-    str[0]=(char)STOP;
-    str[1]=(char)stopCode;
+    str[0] = (char)STOP;
+    str[1] = (char)stopCode;
     return 2;
 }
-
