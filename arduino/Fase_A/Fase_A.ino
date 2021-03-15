@@ -1,6 +1,10 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
 
+
+uint32_t initialTS = 0;
+uint32_t startTS = 0;
+
 char packet[1024];
 /*
 Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
@@ -51,7 +55,11 @@ void loop() {
   delay(1000);
 }
 
-
+/*
+codigo quando se recebe trama start
+startTS = join32((char*)&packet[1]);
+initialTS = millis();
+*/
 
 void packetConstruct(){
   // put your main code here, to run repeatedly:
@@ -75,4 +83,10 @@ void packetConstruct(){
   //O processo repete-se a cada 100 ms
   delay(100);
   
+  }
+
+
+  uint32_t currentTimestamp(){
+    //calcular timestamp desde o inicio até ao enviado do concentrador
+    return (milis() - initialTS) + startTS;
   }
