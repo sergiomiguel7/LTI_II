@@ -6,6 +6,7 @@ uint32_t initialTS = 0;
 uint32_t startTS = 0;
 
 char packet[1024];
+int pos = 0;
 /*
 Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
 Ou é melhor acrescentar uma nova variavel ao projeto que apontará sempre para o proximo local do pacote que esteja vazio?
@@ -82,11 +83,10 @@ void packetConstruct(){
 
   //O processo repete-se a cada 100 ms
   delay(100);
-  
   }
 
 
   uint32_t currentTimestamp(){
     //calcular timestamp desde o inicio até ao enviado do concentrador
-    return (milis() - initialTS) + startTS;
+    return (millis() - initialTS) + startTS;
   }

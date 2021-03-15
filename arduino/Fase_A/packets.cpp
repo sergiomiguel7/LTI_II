@@ -1,6 +1,5 @@
 #include "packets.h"
 #include "Arduino.h"
-#include "../../concentrador/api.h"
 
 /*
 packet[] -> Pacote á qual vai ser adiciona o value
