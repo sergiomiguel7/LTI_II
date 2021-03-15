@@ -4,6 +4,7 @@
 #define SIZE1 256
 #define SIZE2 512
 #define SIZE3 1024
+#define MAX_SENSOR 10
 #define START 0
 #define STOP 1
 #define ERROR 2
@@ -33,6 +34,9 @@ int sockManager;
 //ficheiros
 int fdLogs, fdErrors, fdData;
 
+//numero sensores ligados
+int configuredPorts;
+
 //estruturas para conversao de bytes
 typedef union
 {
@@ -59,6 +63,7 @@ typedef struct config {
     uint8_t na; //numero de amostras
     char portSerial[SIZE1]; //serial port used from arduino when write blueetooth data
     int serialNumber; //index from serial 
+    int opened; //it's opened ?
 } config;
 
-config actualConfig;
+config actualConfig[MAX_SENSOR];
