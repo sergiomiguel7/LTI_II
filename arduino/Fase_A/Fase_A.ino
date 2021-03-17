@@ -1,15 +1,17 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
 
+#define ERRORPACKETSIZE 9
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
-
-char packet[1024];
+uint32_t pa = 0;
+char aux [24];
+char dataPacket [1024];
 int pos = 0;
 /*
-Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
-Ou é melhor acrescentar uma nova variavel ao projeto que apontará sempre para o proximo local do pacote que esteja vazio?
+  Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
+  Ou é melhor acrescentar uma nova variavel ao projeto que apontará sempre para o proximo local do pacote que esteja vazio?
 */
 
 //O LDR está conectado com o GPIO 34
@@ -40,29 +42,39 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int ldrValue = analogRead(ldrPin);
-  int pirStat = digitalRead(pirPin);
 
-  float voltage_value =  ((ldrValue * 3.3 ) / (4095));
+  if (SerialBT.available()) {
+    //ler trama
+    SerialBT.readBytes(dataPacket, 14);
+    // verificar tipo de trama
+    if (dataPacket[0] == 0) {           //trama de START
 
-  if (voltage_value <= 0.75) {
-    digitalWrite(ledPin, HIGH);
-  } else {
-    digitalWrite(ledPin, LOW);
+      startPacket(dataPacket, &startTS, &pa);
+
+      //obter timestamp trama e actual
+      initialTS = millis();
+
+      if(startTS <= 0){
+          errorPacket(aux,&startTS,0);
+          SerialBT.write(aux, ERRORPACKETSIZE);    
+      }
+
+
+
+      
+
+    }
   }
-
-  //O processo repete-se a cada 1 segundo
-  delay(1000);
 }
 
+
 /*
-codigo quando se recebe trama start
-startTS = join32((char*)&packet[1]);
-initialTS = millis();
+  codigo quando se recebe trama start
+  startTS = join32((char*)&packet[1]);
+  initialTS = millis();
 */
 
-void packetConstruct(){
+void packetConstruct() {
   // put your main code here, to run repeatedly:
   int ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
@@ -82,11 +94,11 @@ void packetConstruct(){
   Serial.println(voltage_value);
 
   //O processo repete-se a cada 100 ms
-  delay(100);
-  }
+  delay(pa);
+}
 
 
-  uint32_t currentTimestamp(){
-    //calcular timestamp desde o inicio até ao enviado do concentrador
-    return (millis() - initialTS) + startTS;
-  }
+uint32_t currentTimestamp() {
+  //calcular timestamp desde o inicio até ao enviado do concentrador
+  return (millis() - initialTS) + startTS;
+}

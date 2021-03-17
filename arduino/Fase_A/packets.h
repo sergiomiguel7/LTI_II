@@ -9,3 +9,5 @@ void data1Packet(char packet[] , uint32_t tsp, int pos);
 void data2Packet(char packet[] , uint32_t tsp, int state);
 
 bool pirAnalysis(int state);
+
+void errorPacket(char packet[] , uint32_t tsp, int err);
