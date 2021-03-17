@@ -1,7 +1,11 @@
 #include "Arduino.h"
 
-bool addChar(char data1[], char data2[], char v1, char v2, int pos);
+bool addInfo(char packet[], char info, int pos);
 
-void startPacket(char packet[], uint32_t tsp, uint32_t pm , uint32_t pa, int na );
+void startPacket(char packet[], uint32_t tsp, uint32_t pa );
 
-void dataPacket(char data1[], char data2[], uint32_t tsp, int pos);
+void data1Packet(char packet[] , uint32_t tsp, int pos);
+
+void data2Packet(char packet[] , uint32_t tsp, int state);
+
+bool pirAnalysis(int state);
