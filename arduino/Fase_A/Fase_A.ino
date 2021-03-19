@@ -1,5 +1,6 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
+  
 
 #define ERRORPACKETSIZE 9
 
@@ -55,8 +56,8 @@ void loop() {
       initialTS = millis();
 
       if(startTS <= 0){
-          errorPacket(aux,&startTS,0);
-          SerialBT.write(aux, ERRORPACKETSIZE);    
+          errorPacket(aux,startTS,0);
+          SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);    
       }
 
 

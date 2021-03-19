@@ -1,5 +1,4 @@
 #include "packets.h"
-#include "Arduino.h"
 #include "api.h"
 
 //Identificador do sistema sensor
@@ -32,9 +31,9 @@ bool addInfo(char packet[], char info, int pos) {
   tsp -> Timestamp no momento em que se recebe o pacote Start
   pa -> Periodo entre amostras
 */
-void startPacket(char packet[], uint32_t tsp, uint32_t pa ) {
-  tsp = join32((char *)&packet[1]);
-  pa = join32((char *)&packet[5]);
+void startPacket(char packet[], uint32_t *tsp, uint32_t *pa ) {
+  *tsp = join32((char *)&packet[1]);
+  *pa = join32((char *)&packet[5]);
 }
 
 
@@ -55,7 +54,7 @@ void startPacket(char packet[], uint32_t tsp, uint32_t pa ) {
 void data1Packet(char packet[] , uint32_t tsp, int pos) {
   packet[0] = 3;
   packet[1] = iss;
-  split32( &packet[2] , tsp);
+  split32(&packet[2], tsp);
   packet[6] = 'V';
   pos = 7;
 }
@@ -78,7 +77,7 @@ void data1Packet(char packet[] , uint32_t tsp, int pos) {
 void data2Packet(char packet[] , uint32_t tsp, int state) {
   packet[0] = 4;
   packet[1] = iss;
-  split32( &packet[2] , tsp);
+  split32(&packet[2] , tsp);
   packet[6] = 'S';
   packet[7] = state;
 }
@@ -101,8 +100,15 @@ void data2Packet(char packet[] , uint32_t tsp, int state) {
 void errorPacket(char packet[] , uint32_t tsp, int err) {
   packet[0] = 2;
   packet[1] = iss;
-  split32( &packet[2] , tsp);
+  split32(&packet[2], tsp);
   packet[6] = err;
+}
+
+
+void stopPacket(char packet[] , uint32_t tsp, int rsn) {
+  packet[0] = 2;
+  split32(&packet[1], tsp);
+  packet[5] = rsn;
 }
 
 

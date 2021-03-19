@@ -8,8 +8,9 @@
 #define DATA1 3
 #define DATA2 4
 
-#include<stdint.h>
-#include<stdbool.h>
+#include "Arduino.h"
+#include "stdint.h"
+#include "stdbool.h"
 
 
 //utils.c functions
@@ -24,18 +25,18 @@ float joinFloat(char *bufffer);
 //estruturas para conversao de bytes
 typedef union
 {
- float number;
- uint8_t bytes[4];
+  float number;
+  uint8_t bytes[4];
 } FLOATUNION_t;
 
 typedef union
 {
- uint16_t number;
- uint8_t bytes[2];
+  uint16_t number;
+  uint8_t bytes[2];
 } UINT16UNION_t;
 
 typedef union
 {
- uint32_t number;
- uint8_t bytes[4];
+  uint32_t number;
+  uint8_t bytes[4];
 } UINT32UNION_t;
