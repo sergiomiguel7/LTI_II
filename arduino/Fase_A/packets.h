@@ -1,15 +1,20 @@
 #include "Arduino.h"
+#define ERRORPACKETSIZE 9
+#define STOPPACKETSIZE 6
+#define DATA2PACKETSIZE 8
+#define ISS 0
 
-bool addInfo(char packet[], char info, int pos);
 
-void startPacket(char packet[], uint32_t *tsp, uint32_t *pa );
+bool addInfo(uint8_t packet[], uint8_t info, int pos);
 
-void data1Packet(char packet[] , uint32_t tsp);
+void startPacket(uint8_t packet[], uint32_t *tsp, uint32_t *pa );
 
-void data2Packet(char packet[] , uint32_t tsp, int state);
+void data1Packet(uint8_t packet[] , uint32_t tsp);
+
+void data2Packet(uint8_t packet[] , uint32_t tsp, int state);
 
 bool pirAnalysis(int state);
 
-void errorPacket(char packet[] , uint32_t tsp, int err);
+void errorPacket(uint8_t packet[] , uint32_t tsp, int err);
 
-void stopPacket(char packet[], int *rsn);
+void stopPacket(uint8_t packet[], int *rsn);

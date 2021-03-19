@@ -1,21 +1,18 @@
 #include "packets.h"
 #include "api.h"
 
-//Identificador do sistema sensor
-const char iss = 0;
-
 //Último estado do sensor PIR
 int lstState = LOW;
 
 /*
   packet[] -> Pacote na qual vai ser adicionada a informação
-  info -> Iformação do tipo char a adicionar no pacote
+  info -> Iformação do tipo uint8_t a adicionar no pacote
   pos -> Posição no pacote vazia para adicionar o proximo valor
 
   return true -> O pacote foi preenchido
   return false -> O pacote ainda tem espaço livre
 */
-bool addInfo(char packet[], char info, int pos) {
+bool addInfo(uint8_t packet[], uint8_t info, int pos) {
   packet[pos] = info;
   pos++;
   if (pos == 1024) {
@@ -31,9 +28,9 @@ bool addInfo(char packet[], char info, int pos) {
   tsp -> Timestamp no momento em que se recebe o pacote Start
   pa -> Periodo entre amostras
 */
-void startPacket(char packet[], uint32_t *tsp, uint32_t *pa ) {
-  *tsp = join32((char *)&packet[1]);
-  *pa = join32((char *)&packet[5]);
+void startPacket(uint8_t packet[], uint32_t *tsp, uint32_t *pa ) {
+  *tsp = join32(&packet[1]);
+  *pa = join32(&packet[5]);
 }
 
 
@@ -51,9 +48,9 @@ void startPacket(char packet[], uint32_t *tsp, uint32_t *pa ) {
   tsp -> Valor do timestamp atual
   pos -> Posição no pacote vazia para adicionar o proximo valor
 */
-void data1Packet(char packet[] , uint32_t tsp) {
-  packet[0] = 3;
-  packet[1] = iss;
+void data1Packet(uint8_t packet[] , uint32_t tsp) {
+  packet[0] = DATA1;
+  packet[1] = ISS;
   split32(&packet[2], tsp);
   packet[6] = 'V';
 }
@@ -73,9 +70,9 @@ void data1Packet(char packet[] , uint32_t tsp) {
   tsp -> Valor do timestamp atual
   state -> Estado do tipo inteiro, devolve 0 no caso de LOW e 1 no caso de HIGH
 */
-void data2Packet(char packet[] , uint32_t tsp, int state) {
-  packet[0] = 4;
-  packet[1] = iss;
+void data2Packet(uint8_t packet[] , uint32_t tsp, int state) {
+  packet[0] = DATA2;
+  packet[1] = ISS;
   split32(&packet[2] , tsp);
   packet[6] = 'S';
   packet[7] = state;
@@ -96,15 +93,15 @@ void data2Packet(char packet[] , uint32_t tsp, int state) {
   tsp -> Valor do timestamp atual
   err -> Tipo de erro ocorrido
 */
-void errorPacket(char packet[] , uint32_t tsp, int err) {
-  packet[0] = 2;
-  packet[1] = iss;
+void errorPacket(uint8_t packet[] , uint32_t tsp, int err) {
+  packet[0] = ERR;
+  packet[1] = ISS;
   split32(&packet[2], tsp);
   packet[6] = err;
 }
 
 
-void stopPacket(char packet[], int *rsn) {
+void stopPacket(uint8_t packet[], int *rsn) {
   *rsn = packet[1];
 }
 

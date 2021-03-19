@@ -1,15 +1,13 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
-
-
-#define ERRORPACKETSIZE 9
+#include "api.h"
 
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
 uint32_t pa = 0;
-char aux [24];
-char dataPacket [1024];
+uint8_t aux [24];
+uint8_t dataPacket [1024];
 int pos = 0;
 
 
@@ -47,7 +45,7 @@ void loop() {
     SerialBT.readBytes(aux, 14);
     // verificar tipo de trama
     
-    if (aux[0] == 0) {           //trama de START
+    if (aux[0] == START) {           //trama de START
       startPacket(aux, &startTS, &pa);
 
       bool erros = false;
@@ -56,13 +54,13 @@ void loop() {
       if (startTS <= 0) {
         //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
         errorPacket(aux, 0, 0);
-        SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);
+        SerialBT.write(aux, ERRORPACKETSIZE);
         erros = true;
       }
 
       if (pa <= 0) {
         errorPacket(aux, startTS, 1);
-        SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);
+        SerialBT.write(aux, ERRORPACKETSIZE);
         erros = true;
       }
 
@@ -76,11 +74,11 @@ void loop() {
           sensorSystem();
           if (SerialBT.available()) {
 
-            SerialBT.readBytes(aux, 6);
-            if (aux[0] == 1) {
+            SerialBT.readBytes(aux, STOPPACKETSIZE);
+            if (aux[0] == STOP) {
               //stopPacket(aux,rsn);          //ver parametros possiveis para a razao
               data1Packet(dataPacket, currentTimestamp());
-              SerialBT.write((uint8_t *)dataPacket, pos);
+              SerialBT.write(dataPacket, pos);
               pos = 7;
             }
           }
@@ -95,7 +93,7 @@ void loop() {
 
 /*
   codigo quando se recebe trama start
-  startTS = join32((char*)&packet[1]);
+  startTS = join32((uint8_t*)&packet[1]);
   initialTS = millis();
 */
 
@@ -116,13 +114,13 @@ void sensorSystem() {
 
   if (addInfo(dataPacket, voltage_value, pos)) {
     data1Packet(dataPacket, currentTimestamp());
-    SerialBT.write((uint8_t *)dataPacket, pos);
+    SerialBT.write(dataPacket, pos);
     pos = 7;
   }
   //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
   if (pirAnalysis(pirStat)) {
     data2Packet(aux, currentTimestamp(), pirStat);
-    SerialBT.write((uint8_t *)aux, 8);
+    SerialBT.write(aux, DATA2PACKETSIZE);
   }
 }
 
