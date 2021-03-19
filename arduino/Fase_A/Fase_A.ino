@@ -4,16 +4,14 @@
 
 #define ERRORPACKETSIZE 9
 
+
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
 uint32_t pa = 0;
 char aux [24];
 char dataPacket [1024];
 int pos = 0;
-/*
-  Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
-  Ou é melhor acrescentar uma nova variavel ao projeto que apontará sempre para o proximo local do pacote que esteja vazio?
-*/
+
 
 //O LDR está conectado com o GPIO 34
 const int ldrPin = 34;
@@ -48,12 +46,13 @@ void loop() {
     //ler trama
     SerialBT.readBytes(aux, 14);
     // verificar tipo de trama
+    
     if (aux[0] == 0) {           //trama de START
-
       startPacket(aux, &startTS, &pa);
 
       bool erros = false;
-
+      
+      //procurar novos possiveis erros para enviar o errorPacket
       if (startTS <= 0) {
         //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
         errorPacket(aux, 0, 0);
@@ -74,28 +73,20 @@ void loop() {
         pos = 7;
 
         while (1) {
-          packetConstruct();
-
+          sensorSystem();
           if (SerialBT.available()) {
 
             SerialBT.readBytes(aux, 6);
             if (aux[0] == 1) {
-              //stopPacket(aux,rsn);
-              data1Packet(dataPacket,currentTimestamp());
-              SerialBT.write(datapacket,pos);
+              //stopPacket(aux,rsn);          //ver parametros possiveis para a razao
+              data1Packet(dataPacket, currentTimestamp());
+              SerialBT.write((uint8_t *)dataPacket, pos);
               pos = 7;
             }
-
-
-
-
           }
-
-
           //O processo repete-se a cada pa ms
           delay(pa);
         }
-
       }
     }
   }
@@ -108,7 +99,7 @@ void loop() {
   initialTS = millis();
 */
 
-void packetConstruct() {
+void sensorSystem() {
   // put your main code here, to run repeatedly:
   int ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
@@ -124,11 +115,15 @@ void packetConstruct() {
   }
 
   if (addInfo(dataPacket, voltage_value, pos)) {
-      data1Packet(dataPacket,currentTimestamp());
-      SerialBT.write(datapacket,pos);
-      pos = 7;
+    data1Packet(dataPacket, currentTimestamp());
+    SerialBT.write((uint8_t *)dataPacket, pos);
+    pos = 7;
   }
-  //TO DO : ENVIAR DATA2 CASO HAJA MUDANCA
+  //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
+  if (pirAnalysis(pirStat)) {
+    data2Packet(aux, currentTimestamp(), pirStat);
+    SerialBT.write((uint8_t *)aux, 8);
+  }
 }
 
 
