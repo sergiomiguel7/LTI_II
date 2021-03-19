@@ -1,6 +1,6 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
-  
+
 
 #define ERRORPACKETSIZE 9
 
@@ -46,24 +46,57 @@ void loop() {
 
   if (SerialBT.available()) {
     //ler trama
-    SerialBT.readBytes(dataPacket, 14);
+    SerialBT.readBytes(aux, 14);
     // verificar tipo de trama
-    if (dataPacket[0] == 0) {           //trama de START
+    if (aux[0] == 0) {           //trama de START
 
-      startPacket(dataPacket, &startTS, &pa);
+      startPacket(aux, &startTS, &pa);
 
-      //obter timestamp trama e actual
-      initialTS = millis();
+      bool erros = false;
 
-      if(startTS <= 0){
-          errorPacket(aux,startTS,0);
-          SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);    
+      if (startTS <= 0) {
+        //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
+        errorPacket(aux, 0, 0);
+        SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);
+        erros = true;
       }
 
+      if (pa <= 0) {
+        errorPacket(aux, startTS, 1);
+        SerialBT.write((uint8_t *)aux, ERRORPACKETSIZE);
+        erros = true;
+      }
+
+      if (!erros) {
+        //obter timestamp trama e actual
+        initialTS = millis();
+
+        pos = 7;
+
+        while (1) {
+          packetConstruct();
+
+          if (SerialBT.available()) {
+
+            SerialBT.readBytes(aux, 6);
+            if (aux[0] == 1) {
+              //stopPacket(aux,rsn);
+              data1Packet(dataPacket,currentTimestamp());
+              SerialBT.write(datapacket,pos);
+              pos = 7;
+            }
 
 
-      
 
+
+          }
+
+
+          //O processo repete-se a cada pa ms
+          delay(pa);
+        }
+
+      }
     }
   }
 }
@@ -90,12 +123,12 @@ void packetConstruct() {
     led = 0;
   }
 
-  //Envia o estado do Led por Bluetooth
-  //SerialBT.write(led);
-  Serial.println(voltage_value);
-
-  //O processo repete-se a cada 100 ms
-  delay(pa);
+  if (addInfo(dataPacket, voltage_value, pos)) {
+      data1Packet(dataPacket,currentTimestamp());
+      SerialBT.write(datapacket,pos);
+      pos = 7;
+  }
+  //TO DO : ENVIAR DATA2 CASO HAJA MUDANCA
 }
 
 

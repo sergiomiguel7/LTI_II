@@ -51,12 +51,11 @@ void startPacket(char packet[], uint32_t *tsp, uint32_t *pa ) {
   tsp -> Valor do timestamp atual
   pos -> Posição no pacote vazia para adicionar o proximo valor
 */
-void data1Packet(char packet[] , uint32_t tsp, int pos) {
+void data1Packet(char packet[] , uint32_t tsp) {
   packet[0] = 3;
   packet[1] = iss;
   split32(&packet[2], tsp);
   packet[6] = 'V';
-  pos = 7;
 }
 
 
@@ -105,10 +104,8 @@ void errorPacket(char packet[] , uint32_t tsp, int err) {
 }
 
 
-void stopPacket(char packet[] , uint32_t tsp, int rsn) {
-  packet[0] = 2;
-  split32(&packet[1], tsp);
-  packet[5] = rsn;
+void stopPacket(char packet[], int *rsn) {
+  *rsn = packet[1];
 }
 
 
