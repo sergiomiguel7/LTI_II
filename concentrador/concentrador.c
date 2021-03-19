@@ -26,7 +26,7 @@ int main()
 
     char bufWrite[1024];
     char bufRead[1024];
-    
+
     int coms = comEnumerate();
     readConfigFile();
 
@@ -131,21 +131,17 @@ void readConfigFile()
         switch (nmrArgs)
         {
         case 0:
-            actualConfig[configuredPorts].pm = atoi(token);
-            break;
-        case 1:
             actualConfig[configuredPorts].pa = atoi(token);
             break;
-        case 2:
-            actualConfig[configuredPorts].na = atoi(token);
-            break;
-        default:            strcpy(actualConfig[configuredPorts].portSerial, token);
+
+        default:
+            strcpy(actualConfig[configuredPorts].portSerial, token);
             actualConfig[configuredPorts].opened = 0;
             configuredPorts++;
             break;
         }
 
-        nmrArgs > 2 ? nmrArgs = 0 : nmrArgs++;
+        nmrArgs > 0 ? nmrArgs = 0 : nmrArgs++;
         token = strtok(NULL, ";");
     }
 
@@ -158,9 +154,7 @@ void readConfigFile()
 void printConfig()
 {
     printf("Serial Port: %s\n", actualConfig[0].portSerial);
-    printf("Period between incoming data from sensor: %d\n", actualConfig[0].pm);
     printf("Period between reading from sensor: %d\n", actualConfig[0].pa);
-    printf("Number of samples before sending stop packet: %d\n", actualConfig[0].na);
 }
 
 /**
@@ -175,10 +169,8 @@ int buildStartPacket(char *str, int index)
     str[0] = (char)START;
     uint32_t ts = current_timestamp();
     split32(str + 1, ts);
-    split32(str + 5, actualConfig[index].pm);
-    split32(str + 9, actualConfig[index].pa);
-    str[13] = actualConfig[index].na;
-    return 14;
+    split32(str + 5, actualConfig[index].pa);
+    return 9;
 }
 
 /**
