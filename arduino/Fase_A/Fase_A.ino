@@ -1,16 +1,15 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
+#include "api.h"
 
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
-
-char packet[1024];
+uint32_t pa = 0;
+uint8_t aux [24];
+uint8_t dataPacket [1024];
 int pos = 0;
-/*
-Será que vale mais a pena ter um programa que lê o pacote e procura um local vazio para adicionar o novo elemento no pacote?
-Ou é melhor acrescentar uma nova variavel ao projeto que apontará sempre para o proximo local do pacote que esteja vazio?
-*/
+
 
 //O LDR está conectado com o GPIO 34
 const int ldrPin = 34;
@@ -40,29 +39,65 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int ldrValue = analogRead(ldrPin);
-  int pirStat = digitalRead(pirPin);
 
-  float voltage_value =  ((ldrValue * 3.3 ) / (4095));
+  if (SerialBT.available()) {
+    //ler trama
+    SerialBT.readBytes(aux, 14);
+    // verificar tipo de trama
+    
+    if (aux[0] == START) {           //trama de START
+      startPacket(aux, &startTS, &pa);
 
-  if (voltage_value <= 0.75) {
-    digitalWrite(ledPin, HIGH);
-  } else {
-    digitalWrite(ledPin, LOW);
+      bool erros = false;
+      
+      //procurar novos possiveis erros para enviar o errorPacket
+      if (startTS <= 0) {
+        //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
+        errorPacket(aux, 0, 0);
+        SerialBT.write(aux, ERRORPACKETSIZE);
+        erros = true;
+      }
+
+      if (pa <= 0) {
+        errorPacket(aux, startTS, 1);
+        SerialBT.write(aux, ERRORPACKETSIZE);
+        erros = true;
+      }
+
+      if (!erros) {
+        //obter timestamp trama e actual
+        initialTS = millis();
+
+        pos = 7;
+
+        while (1) {
+          sensorSystem();
+          if (SerialBT.available()) {
+
+            SerialBT.readBytes(aux, STOPPACKETSIZE);
+            if (aux[0] == STOP) {
+              //stopPacket(aux,rsn);          //ver parametros possiveis para a razao
+              data1Packet(dataPacket, currentTimestamp());
+              SerialBT.write(dataPacket, pos);
+              pos = 7;
+            }
+          }
+          //O processo repete-se a cada pa ms
+          delay(pa);
+        }
+      }
+    }
   }
-
-  //O processo repete-se a cada 1 segundo
-  delay(1000);
 }
 
+
 /*
-codigo quando se recebe trama start
-startTS = join32((char*)&packet[1]);
-initialTS = millis();
+  codigo quando se recebe trama start
+  startTS = join32((uint8_t*)&packet[1]);
+  initialTS = millis();
 */
 
-void packetConstruct(){
+void sensorSystem() {
   // put your main code here, to run repeatedly:
   int ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
@@ -77,16 +112,20 @@ void packetConstruct(){
     led = 0;
   }
 
-  //Envia o estado do Led por Bluetooth
-  //SerialBT.write(led);
-  Serial.println(voltage_value);
-
-  //O processo repete-se a cada 100 ms
-  delay(100);
+  if (addInfo(dataPacket, voltage_value, pos)) {
+    data1Packet(dataPacket, currentTimestamp());
+    SerialBT.write(dataPacket, pos);
+    pos = 7;
   }
-
-
-  uint32_t currentTimestamp(){
-    //calcular timestamp desde o inicio até ao enviado do concentrador
-    return (millis() - initialTS) + startTS;
+  //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
+  if (pirAnalysis(pirStat)) {
+    data2Packet(aux, currentTimestamp(), pirStat);
+    SerialBT.write(aux, DATA2PACKETSIZE);
   }
+}
+
+
+uint32_t currentTimestamp() {
+  //calcular timestamp desde o inicio até ao enviado do concentrador
+  return (millis() - initialTS) + startTS;
+}
