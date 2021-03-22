@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <sys/time.h>
 #include <signal.h>
@@ -29,8 +30,9 @@ int main()
 
   //  int coms = comEnumerate();
     readConfigFile();
-
-    handleBegin(bufWrite);
+    openSerial();
+    for(int i = 0; i < 30 ; i++)
+        handleBegin(bufWrite);
 }
 
 /**
@@ -50,12 +52,12 @@ void handler(int sig)
             //stop to sensor
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
-            comWrite(actualConfig[i].serialNumber, write, size);
+            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
         }
     }
     //close all
     closeFiles();
-    comTerminate();
+    //comTerminate();
 }
 
 /**
@@ -78,9 +80,9 @@ void handleBegin(char *str)
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        openSerial();
         if (actualConfig[i].opened)
         {
+            printf("%s \n",str);
             int size = buildStartPacket(str, i);
             RS232_SendBuf(actualConfig[i].serialNumber, str, size);
         }
@@ -136,7 +138,7 @@ void readConfigFile()
 
         default:
             strcpy(actualConfig[configuredPorts].portSerial, token);
-            actualConfig[configuredPorts].opened = 0;
+            actualConfig[configuredPorts].opened = 1;
             configuredPorts++;
             break;
         }
