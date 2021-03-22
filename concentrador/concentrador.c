@@ -27,7 +27,7 @@ int main()
     char bufWrite[1024];
     char bufRead[1024];
 
-    int coms = comEnumerate();
+  //  int coms = comEnumerate();
     readConfigFile();
 
     handleBegin(bufWrite);
@@ -66,7 +66,7 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
-    comCloseAll();
+   //TODO: close with for to all actualconfig[i].serialNumber;
 }
 
 /**
@@ -82,7 +82,7 @@ void handleBegin(char *str)
         if (actualConfig[i].opened)
         {
             int size = buildStartPacket(str, i);
-            comWrite(actualConfig[i].serialNumber, str, size);
+            RS232_SendBuf(actualConfig[i].serialNumber, str, size);
         }
     }
 }
@@ -95,12 +95,12 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        actualConfig[i].serialNumber = comFindPort(actualConfig[i].portSerial);
+        actualConfig[i].serialNumber = RS232_GetPortnr(actualConfig[i].portSerial);
         if (actualConfig[i].serialNumber == -1)
         {
             actualConfig[i].serialNumber = 6;
         }
-        int status = comOpen(actualConfig[i].serialNumber, 115200);
+        int status =  RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
         if (status)
             actualConfig[i].opened = status;
     }
