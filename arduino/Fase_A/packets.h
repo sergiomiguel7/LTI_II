@@ -3,6 +3,8 @@
 #define STOPPACKETSIZE 2
 #define DATA2PACKETSIZE 8
 #define STARTPACKETSIZE 9
+#define TSERROR 0
+#define PAERROR 1
 #define ISS 0
 
 

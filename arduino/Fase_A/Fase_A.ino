@@ -57,13 +57,13 @@ void loop() {
       //procurar novos possiveis erros para enviar o errorPacket
       if (startTS <= 0) {
         //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
-        errorPacket(aux, 0, 0);
+        errorPacket(aux, 0, TSERROR);
         SerialBT.write(aux, ERRORPACKETSIZE);
         erros = true;
       }
 
       if (pa <= 0) {
-        errorPacket(aux, startTS, 1);
+        errorPacket(aux, startTS, PAERROR);
         SerialBT.write(aux, ERRORPACKETSIZE);
         erros = true;
       }
