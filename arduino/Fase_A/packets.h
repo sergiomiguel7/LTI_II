@@ -1,7 +1,8 @@
 #include "Arduino.h"
-#define ERRORPACKETSIZE 9
-#define STOPPACKETSIZE 6
+#define ERRORPACKETSIZE 7
+#define STOPPACKETSIZE 2
 #define DATA2PACKETSIZE 8
+#define STARTPACKETSIZE 9
 #define ISS 0
 
 

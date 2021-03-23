@@ -24,13 +24,16 @@ const int pirPin = 27;
 //0 -> desligado , 1 -> ligado
 bool led = 0;
 
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
 
 BluetoothSerial SerialBT;
 
 void setup() {
   // put your setup code here, to run once:
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   SerialBT.begin("ESP32test"); //Bluetooth device name
 
   pinMode(ledPin, OUTPUT);
@@ -42,10 +45,11 @@ void loop() {
 
   if (SerialBT.available()) {
     //ler trama
-    SerialBT.readBytes(aux, 14);
+    SerialBT.readBytes(aux, STARTPACKETSIZE);
     // verificar tipo de trama
     
     if (aux[0] == START) {           //trama de START
+      Serial.println("Recebi pacote Start");
       startPacket(aux, &startTS, &pa);
 
       bool erros = false;
@@ -69,7 +73,7 @@ void loop() {
         initialTS = millis();
 
         pos = 7;
-
+        
         while (1) {
           sensorSystem();
           if (SerialBT.available()) {
