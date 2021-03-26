@@ -62,6 +62,9 @@ typedef struct config {
     char portSerial[SIZE1]; //serial port used from arduino when write blueetooth data
     int serialNumber; //index from serial 
     int opened; //it's opened ?
+    uint8_t iss;//sensor id
+    char area[SIZE1]; //where is the sensor
+    char GPS[SIZE1]; //gps coordinates from sensor
 } config;
 
 config actualConfig[MAX_SENSOR];
