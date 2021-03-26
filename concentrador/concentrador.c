@@ -113,7 +113,11 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
-    //TODO: close with for to all actualconfig[i].serialNumber;
+    for(int i=0; i<configuredPorts;i++){
+        if(actualConfig[i].opened){
+            RS232_CloseComport(actualConfig[i].serialNumber);
+        }
+    }
 }
 
 /**
