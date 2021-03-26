@@ -50,8 +50,7 @@ void receiveData(char *readBuf)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            sleep(1);
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, sizeof(readBuf));
+            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE3);
 
             if (readed > 0)
             {
@@ -76,6 +75,7 @@ void receiveData(char *readBuf)
                     }
                 }
             }
+            usleep(100000); /* sleep for 100 milliSeconds */
         }
     }
 }
@@ -149,7 +149,10 @@ void openSerial()
         }
         int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
         if (status)
+        {
             actualConfig[i].opened = status;
+            printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
+        }
     }
 }
 
