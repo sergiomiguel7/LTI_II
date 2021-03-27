@@ -68,9 +68,10 @@ void receiveData(char *readBuf)
                     }
                     else
                     {
-                        for (int j = 7; j < readed; j++)
-                        {
-                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %u, VALOR: %u", actualConfig[i].iss, timestamp, type, readBuf[j]);
+                        for (int j = 7; j < readed; j+4)
+                        {   
+                            float value = joinFloat(readBuf + j);
+                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %u, VALOR: %f", actualConfig[i].iss, timestamp, type, value);
                         }
                     }
                 }
