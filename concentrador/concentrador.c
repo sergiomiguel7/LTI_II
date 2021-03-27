@@ -140,8 +140,9 @@ void handleBegin(char *str)
         }
     }
 
-    fdData = open("files/fdData.csv", O_CREAT | O_APPEND);
-    fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND);
+    fdData = open("fdData.csv", O_CREAT | O_APPEND | O_RDWR, 0666);
+    fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND | O_RDWR, 0666);
+
 }
 
 /**
