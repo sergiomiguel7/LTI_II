@@ -64,14 +64,14 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
-                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u", actualConfig[i].iss, timestamp, type);
+                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
                     {
                         for (int j = 7; j < readed; j+4)
                         {   
                             float value = joinFloat(readBuf + j);
-                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %u, VALOR: %f", actualConfig[i].iss, timestamp, type, value);
+                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %u, VALOR: %f\n", actualConfig[i].iss, timestamp, type, value);
                         }
                     }
                 }
