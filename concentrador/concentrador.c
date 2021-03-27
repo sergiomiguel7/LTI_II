@@ -142,7 +142,6 @@ void handleBegin(char *str)
 
     fdData = open("fdData.csv", O_CREAT | O_APPEND | O_RDWR, 0666);
     fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND | O_RDWR, 0666);
-
 }
 
 /**
@@ -173,7 +172,11 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
-                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
+                        char entry[SIZE1];
+                        sprintf(entry, "%u;%s;%s;%u;%u;\n",
+                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
+                        write(fdErrors, entry, sizeof(entry));
+                        //printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
                     {
@@ -181,8 +184,8 @@ void receiveData(char *readBuf)
                         {
                             float value = joinFloat(readBuf + j);
                             char entry[SIZE1];
-                            sprintf(entry,"%u;%s;%s;%u;%c;%f\n", 
-                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char) type, value);
+                            sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
+                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             write(fdData, entry, sizeof(entry));
                             //printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
                         }
