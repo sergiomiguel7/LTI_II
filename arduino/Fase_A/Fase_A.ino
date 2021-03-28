@@ -7,7 +7,7 @@ uint32_t initialTS = 0;
 uint32_t startTS = 0;
 uint32_t pa = 0;
 uint8_t aux [24];
-uint8_t dataPacket [1024];
+uint8_t dataPacket [235];
 int pos = 0;
 
 
@@ -47,13 +47,16 @@ void loop() {
     //ler trama
     SerialBT.readBytes(aux, STARTPACKETSIZE);
     // verificar tipo de trama
-    
+
     if (aux[0] == START) {           //trama de START
       Serial.println("Recebi pacote Start");
       startPacket(aux, &startTS, &pa);
+      Serial.println((String)startTS + " -||- " + pa );
+      data1Packet(dataPacket, currentTimestamp());
+
 
       bool erros = false;
-      
+
       //procurar novos possiveis erros para enviar o errorPacket
       if (startTS <= 0) {
         //caso o startTS seja mal recebido enviamos um timeStamp default neste caso 0
@@ -73,17 +76,18 @@ void loop() {
         initialTS = millis();
 
         pos = 7;
-        
+
         while (1) {
           sensorSystem();
           if (SerialBT.available()) {
 
             SerialBT.readBytes(aux, STOPPACKETSIZE);
             if (aux[0] == STOP) {
-              //stopPacket(aux,rsn);          //ver parametros possiveis para a razao
+              stopPacket(aux,0);          //ver parametros possiveis para a razao
               data1Packet(dataPacket, currentTimestamp());
               SerialBT.write(dataPacket, pos);
               pos = 7;
+              break;
             }
           }
           //O processo repete-se a cada pa ms
@@ -117,15 +121,18 @@ void sensorSystem() {
   }
 
   if (addInfo(dataPacket, voltage_value, pos)) {
-    data1Packet(dataPacket, currentTimestamp());
     SerialBT.write(dataPacket, pos);
+    data1Packet(dataPacket, currentTimestamp());
     pos = 7;
+  } else {
+    pos = pos + 4;
   }
   //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
   if (pirAnalysis(pirStat)) {
     data2Packet(aux, currentTimestamp(), pirStat);
     SerialBT.write(aux, DATA2PACKETSIZE);
   }
+
 }
 
 
