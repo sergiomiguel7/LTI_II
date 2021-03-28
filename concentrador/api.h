@@ -1,6 +1,7 @@
 #define ADDR "127.0.0.1"
 #define PORT 8000
 #define CONFIG_FILE "../env/config.txt"
+#define SIZE0 32
 #define SIZE1 256
 #define SIZE2 512
 #define SIZE3 1024
@@ -62,6 +63,9 @@ typedef struct config {
     char portSerial[SIZE1]; //serial port used from arduino when write blueetooth data
     int serialNumber; //index from serial 
     int opened; //it's opened ?
+    uint8_t iss;//sensor id
+    char area[SIZE0]; //where is the sensor
+    char GPS[SIZE0]; //gps coordinates from sensor
 } config;
 
 config actualConfig[MAX_SENSOR];
