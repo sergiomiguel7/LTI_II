@@ -140,8 +140,8 @@ void handleBegin(char *str)
         }
     }
 
-    fdData = open("fdData.csv", O_CREAT | O_APPEND | O_RDWR, 0666);
-    fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND | O_RDWR, 0666);
+   // fdData = open("fdData.csv", O_CREAT | O_APPEND | O_RDWR, 0666);
+    //fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND | O_RDWR, 0666);
 }
 
 /**
@@ -172,10 +172,10 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
-                        char entry[SIZE1];
-                        sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry));
+                        //char entry[SIZE1];
+                      //  sprintf(entry, "%u;%s;%s;%u;%u;\n",
+                          //      actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
+                    //    write(fdErrors, entry, sizeof(entry));
                         //printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
@@ -183,14 +183,14 @@ void receiveData(char *readBuf)
                         for (int j = 7; j < readed; j = j + 4)
                         {
                             float value = joinFloat(readBuf + j);
-                            char entry[SIZE1];
+                          //  char entry[SIZE1];
                             printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
-
+/* 
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                     actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
 
                             int n = write(fdData, entry, sizeof(entry));
-                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);
+                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry); */
                         }
                     }
                 }
