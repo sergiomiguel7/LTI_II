@@ -152,17 +152,16 @@ void handleBegin(char *str)
  **/
 void receiveData(char *readBuf)
 {
-
     int readed = 0;
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE3);
+            printf("Li da COM %d\n", readed);
 
             if (readed > 0)
             {
-                printf("Li da COM %d\n", readed);
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
 
@@ -189,8 +188,9 @@ void receiveData(char *readBuf)
 
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                     actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+
                             int n = write(fdData, entry, sizeof(entry));
-                            printf("escrevi: %d\n", n);
+                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);
                         }
                     }
                 }
