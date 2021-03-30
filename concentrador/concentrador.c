@@ -162,6 +162,7 @@ void receiveData(char *readBuf)
 
             if (readed > 0)
             {
+                printf("Li da COM %d\n", readed);
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
 
@@ -184,10 +185,12 @@ void receiveData(char *readBuf)
                         {
                             float value = joinFloat(readBuf + j);
                             char entry[SIZE1];
+                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                     actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
-                            write(fdData, entry, sizeof(entry));
-                            //printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                            int n = write(fdData, entry, sizeof(entry));
+                            printf("escrevi: %d\n", n);
                         }
                     }
                 }
