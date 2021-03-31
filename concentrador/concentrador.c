@@ -51,7 +51,7 @@ int main()
     configuredPorts = 0;
 
     char bufWrite[SIZE3];
-    char bufRead[SIZE3];
+    char bufRead[SIZE_DATA];
 
     readConfigFile();
     openSerial();
@@ -157,7 +157,7 @@ void receiveData(char *readBuf)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
+            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA - 1);
             printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
