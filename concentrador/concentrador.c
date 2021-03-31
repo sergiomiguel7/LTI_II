@@ -19,7 +19,7 @@ void printConfig();
 void handleBegin(char *str);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
-void receiveData();
+void receiveData(char *readBuf);
 
 /**
  * @param sig - signal identifier
@@ -56,7 +56,7 @@ int main()
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    receiveData();
+    receiveData(bufRead);
 }
 
 /**
@@ -150,22 +150,20 @@ void handleBegin(char *str)
  * DATAx => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> TGM | 7... -> VALi| , x = 1 or 2
  * ERROR => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> ERR |
  **/
-void receiveData()
+void receiveData(char *readBuf)
 {
     int readed = 0;
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            char readBuf[SIZE2];
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
+            printf("Li da COM %d => do config number: %d de porta serial: %s\n" ,readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
             {
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
-
                     actualConfig[i].iss = readBuf[1];
                     uint32_t timestamp = join32(readBuf + 2);
 
@@ -196,6 +194,7 @@ void receiveData()
                     }
                 }
             }
+            RS232_flushRX(actualConfig[i].serialNumber);
             usleep(100000); /* sleep for 100 milliSeconds */
         }
     }
