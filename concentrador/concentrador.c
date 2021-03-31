@@ -162,6 +162,7 @@ void receiveData(char *readBuf)
 
             if (readed > 0)
             {
+                readBuf[readed] = 0;
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
                     actualConfig[i].iss = readBuf[1];
@@ -185,15 +186,14 @@ void receiveData(char *readBuf)
                             float value = joinFloat(readBuf + j);
                             char entry[SIZE1];
                             printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                            readBuf[j] = '.';
                             /*  
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                             actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, sizeof(entry));
                             printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
                         }
-                        char write[SIZE1];
-                        int size = buildStartPacket(write, i);
-                        RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+                        receiveData(readBuf);
                     }
                 }
             }
