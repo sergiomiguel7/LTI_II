@@ -114,7 +114,7 @@ void openSerial()
         {
             actualConfig[i].serialNumber = 6;
         }
-        int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
+        int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 1);
         if (status)
         {
             actualConfig[i].opened = status;
@@ -158,7 +158,7 @@ void receiveData(char *readBuf)
         for (int i = 0; i < configuredPorts; i++)
         {
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-            printf("Li da COM %d => do config number: %d de porta serial: %s\n" ,readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
+            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
             {
@@ -189,12 +189,14 @@ void receiveData(char *readBuf)
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                             actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, sizeof(entry));
-                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);  */
+                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
                         }
+                        char write[SIZE1];
+                        int size = buildStartPacket(write, i);
+                        RS232_SendBuf(actualConfig[i].serialNumber, write, size);
                     }
                 }
             }
-            RS232_flushRX(actualConfig[i].serialNumber);
             usleep(100000); /* sleep for 100 milliSeconds */
         }
     }
