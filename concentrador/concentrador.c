@@ -158,7 +158,7 @@ void receiveData(char *readBuf)
         for (int i = 0; i < configuredPorts; i++)
         {
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-            printf("Li da COM %d\n", readed);
+            printf("Li da COM %d => do config number: %d de porta serial: %s\n" ,readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
             {
@@ -195,7 +195,7 @@ void receiveData(char *readBuf)
                     }
                 }
             }
-            sleep(100000); /* sleep for 100 milliSeconds */
+            usleep(100000); /* sleep for 100 milliSeconds */
         }
     }
 }
