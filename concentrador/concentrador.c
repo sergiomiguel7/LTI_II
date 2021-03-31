@@ -114,7 +114,7 @@ void openSerial()
         {
             actualConfig[i].serialNumber = 6;
         }
-        int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 1);
+        int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
         if (status)
         {
             actualConfig[i].opened = status;
