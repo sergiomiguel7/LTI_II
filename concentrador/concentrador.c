@@ -19,7 +19,7 @@ void printConfig();
 void handleBegin(char *str);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
-void receiveData(char *readBuf);
+void receiveData();
 
 /**
  * @param sig - signal identifier
@@ -50,13 +50,13 @@ int main()
     signal(SIGINT, handler);
     configuredPorts = 0;
 
-    char bufWrite[1024];
-    char bufRead[1024];
+    char bufWrite[SIZE3];
+    char bufRead[SIZE3];
 
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    receiveData(bufRead);
+    receiveData();
 }
 
 /**
@@ -150,15 +150,16 @@ void handleBegin(char *str)
  * DATAx => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> TGM | 7... -> VALi| , x = 1 or 2
  * ERROR => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> ERR |
  **/
-void receiveData(char *readBuf)
+void receiveData()
 {
     int readed = 0;
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
+            char readBuf[SIZE2];
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-            printf("Li da COM %d => do config number: %d de porta serial: %s\n" ,readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
+            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
             {
