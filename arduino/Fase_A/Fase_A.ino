@@ -76,22 +76,27 @@ void loop() {
         initialTS = millis();
 
         pos = 7;
-
+        int n;
         while (1) {
           sensorSystem();
-          if (SerialBT.available()) {
 
-            SerialBT.readBytes(aux, STOPPACKETSIZE);
-            if (aux[0] == STOP)
-            {
-              int rsn;
-              stopPacket(aux, &rsn);         //ver parametros possiveis para a razao
-              data1Packet(dataPacket, currentTimestamp());
-              SerialBT.write(dataPacket, pos);
-              pos = 7;
-              break;
+          if ((n = SerialBT.available())) {
+            if (n < 5) {
+              SerialBT.readBytes(aux, STOPPACKETSIZE);
+              if (aux[0] == STOP)
+              {
+                int rsn;
+                stopPacket(aux, &rsn);         //ver parametros possiveis para a razao
+                data1Packet(dataPacket, currentTimestamp());
+                SerialBT.write(dataPacket, pos);
+                pos = 7;
+                break;
+              }
             }
+            else
+              SerialBT.readBytes(aux, n);
           }
+          SerialBT.flush();
           //O processo repete-se a cada pa ms
           delay(pa);
         }
@@ -132,10 +137,10 @@ void sensorSystem() {
     pos = pos + 4;
   }
   //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
-  if (pirStat == HIGH) {
+  /*if (pirStat == HIGH) {
     data2Packet(aux, currentTimestamp(), pirStat);
     SerialBT.write(aux, DATA2PACKETSIZE);
-  }
+    }*/
 
 }
 
