@@ -56,7 +56,7 @@ int main()
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    //receiveData(bufRead);
+    receiveData(bufRead);
 }
 
 /**
