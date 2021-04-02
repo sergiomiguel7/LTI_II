@@ -56,7 +56,7 @@ int main()
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    receiveData(bufRead);
+    //receiveData(bufRead);
 }
 
 /**
@@ -97,8 +97,7 @@ void readConfigFile()
         nmrArgs > 0 ? nmrArgs = 0 : nmrArgs++;
         token = strtok(NULL, ";");
     }
-
-    printConfig();
+    printf("Number of devices found: %d\n", configuredPorts);
 }
 
 /*
@@ -140,8 +139,8 @@ void handleBegin(char *str)
         }
     }
 
-    // fdData = open("fdData.csv", O_RDWR |O_CREAT | O_APPEND, 0666);
-    //fdErrors = open("files/fdErrors.txt", O_RDWR |O_CREAT | O_APPEND,0666);
+    fdData = open("log/data.txt", O_RDWR |O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR |O_CREAT | O_APPEND,0666);
 }
 
 /**
@@ -217,15 +216,6 @@ void closeFiles()
             RS232_CloseComport(actualConfig[i].serialNumber);
         }
     }
-}
-
-/**
-* function to print the readed configuration
-**/
-void printConfig()
-{
-    printf("Serial Port: %s\n", actualConfig[0].portSerial);
-    printf("Period between reading from sensor: %d\n", actualConfig[0].pa);
 }
 
 /**
