@@ -7,7 +7,7 @@ uint32_t initialTS = 0;
 uint32_t startTS = 0;
 uint32_t pa = 0;
 uint8_t aux [24];
-uint8_t dataPacket [235];
+uint8_t dataPacket [128];
 int pos = 0;
 
 
@@ -82,8 +82,10 @@ void loop() {
           if (SerialBT.available()) {
 
             SerialBT.readBytes(aux, STOPPACKETSIZE);
-            if (aux[0] == STOP) {
-              stopPacket(aux,0);          //ver parametros possiveis para a razao
+            if (aux[0] == STOP)
+            {
+              int rsn;
+              stopPacket(aux, &rsn);         //ver parametros possiveis para a razao
               data1Packet(dataPacket, currentTimestamp());
               SerialBT.write(dataPacket, pos);
               pos = 7;
@@ -121,14 +123,16 @@ void sensorSystem() {
   }
 
   if (addInfo(dataPacket, voltage_value, pos)) {
-    SerialBT.write(dataPacket, pos);
+    pos = pos + 4;
+    size_t num = SerialBT.write(dataPacket, pos);
+    Serial.println((String) "BT -> " + num);
     data1Packet(dataPacket, currentTimestamp());
     pos = 7;
   } else {
     pos = pos + 4;
   }
   //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
-  if (pirAnalysis(pirStat)) {
+  if (pirStat == HIGH) {
     data2Packet(aux, currentTimestamp(), pirStat);
     SerialBT.write(aux, DATA2PACKETSIZE);
   }

@@ -12,10 +12,10 @@ int lstState = LOW;
   return true -> O pacote foi preenchido
   return false -> O pacote ainda tem espaço livre
 */
-bool addInfo(uint8_t packet[], float info, int pos){
-  splitFloat(&packet[pos], info);
-  Serial.println((String)info +" " +packet[pos]+" "+packet[pos+1]+" "+packet[pos+2]+" "+packet[pos+3]);
-  if (pos > 230) {
+bool addInfo(uint8_t packet[], float info, int pos) {
+  splitFloat(&packet[pos], info);    
+  Serial.println((String)pos +" ->->-> " + info + " >>>> " + packet[pos] + " " + packet[pos + 1] + " " + packet[pos + 2] + " " + packet[pos + 3]);
+  if (pos > 120) {
     Serial.println((String)"Cheguei Aqui!!!!");
     return true;
   }
@@ -36,7 +36,7 @@ void startPacket(uint8_t packet[], uint32_t *tsp, uint32_t *pa ) {
 
 
 /*
-  DATA1 -> [ TPM (1 byte) | ISS (1 byte) | TSP (4 bytes) | TGM (1 byte) | VAL1 (1 byte) | VAL2 (1 byte) | VALi ... ]
+  DATA1 -> [ TPM (1 byte) | ISS (1 byte) | TSP (4 bytes) | TGM (1 byte) | VAL1 (4 bytes) | VAL2 (4 bytes) | VALi ... ]
 
   TPM -> Tipo de mensagem
   TSP -> Timestamp no momento de envio
