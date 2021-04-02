@@ -20,6 +20,7 @@ void handleBegin(char *str);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 void receiveData(char *readBuf);
+void sendPacket();
 
 /**
  * @param sig - signal identifier
@@ -143,6 +144,18 @@ void handleBegin(char *str)
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
+
+void sendPacket(){
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
+            char str[6] = "awake";
+            RS232_SendBuf(actualConfig[i].serialNumber, str, 6);
+        }
+    }
+}
+
 /**
  * @param readBuf - char buffer
  * handles incoming data from sensors
@@ -194,6 +207,7 @@ void receiveData(char *readBuf)
                     }
                 }
             }
+            sendPacket();
             usleep(100000); /* sleep for 100 milliSeconds */
         }
     }
