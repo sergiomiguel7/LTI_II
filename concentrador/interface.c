@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <time.h>
 #include "api.h"
-#include "rs232v0/rs232-linux.c"
+#include "rs232v0/rs232.h"
 
 //define functions
 void handler(int sign);
