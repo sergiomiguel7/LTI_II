@@ -39,6 +39,8 @@ void handler(int sig)
             //stop to sensor
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
+            printf("%s opened and i send %d bytes\n", actualConfig[i].portSerial, size);
+
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
         }
     }
@@ -146,8 +148,8 @@ void handleBegin(char *str)
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
-
-void sendPacket(){
+void sendPacket()
+{
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -184,11 +186,11 @@ void receiveData(char *readBuf)
                     uint8_t type = readBuf[6];
 
                     if (readBuf[0] == ERROR)
-                    {                                                
+                    {
                         char entry[SIZE1];
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                        actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry)); 
+                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
+                        write(fdErrors, entry, sizeof(entry));
                         printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
@@ -197,10 +199,10 @@ void receiveData(char *readBuf)
                         {
                             float value = joinFloat(readBuf + j);
 
-                           // printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                            // printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
                             char entry[SIZE1];
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
-                            actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, strlen(entry));
                             printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                         }
