@@ -39,8 +39,6 @@ void handler(int sig)
             //stop to sensor
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
-            printf("%s opened and i send %d bytes\n", actualConfig[i].portSerial, size);
-
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
         }
     }
@@ -148,6 +146,10 @@ void handleBegin(char *str)
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
+/**
+ * send packet to resolved issue on bluetooth connection with sensor
+ * basic awake packet
+ **/
 void sendPacket()
 {
     for (int i = 0; i < configuredPorts; i++)
@@ -169,13 +171,13 @@ void sendPacket()
 void receiveData(char *readBuf)
 {
     int readed = 0;
+    char entry[SIZE_DATA];
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
             readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
-
+            
             if (readed > 0)
             {
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
@@ -187,7 +189,6 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
-                        char entry[SIZE1];
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
                                 actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
                         write(fdErrors, entry, sizeof(entry));
@@ -198,9 +199,6 @@ void receiveData(char *readBuf)
                         for (int j = 7; j < readed; j = j + 4)
                         {
                             float value = joinFloat(readBuf + j);
-
-                            // printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
-                            char entry[SIZE1];
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                     actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, strlen(entry));
@@ -208,6 +206,7 @@ void receiveData(char *readBuf)
                         }
                     }
                 }
+                memset(entry, 0, sizeof entry);
             }
             sendPacket();
             usleep(100000); /* sleep for 100 milliSeconds */
