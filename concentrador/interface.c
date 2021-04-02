@@ -201,8 +201,8 @@ void receiveData(char *readBuf)
                             char entry[SIZE1];
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                             actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
-                            int n = write(fdData, entry, sizeof(entry));
-                            printf("Recebi %f valor e escrevi no ficheiro %d", value, n);
+                            int n = write(fdData, entry, strlen(entry));
+                            printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                         }
                     }
                 }
