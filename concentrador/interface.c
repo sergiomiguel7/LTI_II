@@ -50,13 +50,13 @@ int main()
     signal(SIGINT, handler);
     configuredPorts = 0;
 
-    char bufWrite[1024];
-    char bufRead[1024];
+    char bufWrite[SIZE3];
+    char bufRead[SIZE_DATA];
 
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    receiveData(bufRead);
+    //receiveData(bufRead);
 }
 
 /**
@@ -97,8 +97,7 @@ void readConfigFile()
         nmrArgs > 0 ? nmrArgs = 0 : nmrArgs++;
         token = strtok(NULL, ";");
     }
-
-    printConfig();
+    printf("Number of devices found: %d\n", configuredPorts);
 }
 
 /*
@@ -140,8 +139,8 @@ void handleBegin(char *str)
         }
     }
 
-    fdData = open("fdData.csv", O_CREAT | O_APPEND | O_RDWR, 0666);
-    fdErrors = open("files/fdErrors.txt", O_CREAT | O_APPEND | O_RDWR, 0666);
+    fdData = open("log/data.txt", O_RDWR |O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR |O_CREAT | O_APPEND,0666);
 }
 
 /**
@@ -152,19 +151,19 @@ void handleBegin(char *str)
  **/
 void receiveData(char *readBuf)
 {
-
     int readed = 0;
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE3);
+            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA - 1);
+            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
             {
+                readBuf[readed] = 0;
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
-
                     actualConfig[i].iss = readBuf[1];
                     uint32_t timestamp = join32(readBuf + 2);
 
@@ -172,11 +171,12 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
+                        /*                         
                         char entry[SIZE1];
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry));
-                        //printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
+                        actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
+                        write(fdErrors, entry, sizeof(entry)); */
+                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
                     {
@@ -184,11 +184,15 @@ void receiveData(char *readBuf)
                         {
                             float value = joinFloat(readBuf + j);
                             char entry[SIZE1];
+                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                            readBuf[j] = '.';
+                            /*  
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
-                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
-                            write(fdData, entry, sizeof(entry));
-                            //printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                            actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+                            int n = write(fdData, entry, sizeof(entry));
+                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
                         }
+                        receiveData(readBuf);
                     }
                 }
             }
@@ -212,15 +216,6 @@ void closeFiles()
             RS232_CloseComport(actualConfig[i].serialNumber);
         }
     }
-}
-
-/**
-* function to print the readed configuration
-**/
-void printConfig()
-{
-    printf("Serial Port: %s\n", actualConfig[0].portSerial);
-    printf("Period between reading from sensor: %d\n", actualConfig[0].pa);
 }
 
 /**
