@@ -91,6 +91,8 @@ void readConfigFile()
         default:
             strcpy(actualConfig[configuredPorts].portSerial, token);
             actualConfig[configuredPorts].opened = 1;
+            strcpy(actualConfig[configuredPorts].GPS, "100;200");
+            strcpy(actualConfig[configuredPorts].area, "Quarto");
             configuredPorts++;
             break;
         }
@@ -195,11 +197,12 @@ void receiveData(char *readBuf)
                         {
                             float value = joinFloat(readBuf + j);
 
-                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
+                           // printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
                             char entry[SIZE1];
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                             actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, sizeof(entry));
+                            printf("Recebi %f valor e escrevi no ficheiro %d", value, n);
                         }
                     }
                 }
