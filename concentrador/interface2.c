@@ -110,9 +110,10 @@ void openSerial()
 
     for (int i = 0; i < configuredPorts; i++)
     {
-        actualConfig[i].serialNumber = open("/dev/rfcomm0", O_RDONLY | O_NOCTTY); //file descriptor
+        actualConfig[i].serialNumber = open("/dev/rfcomm0", O_RDONLY | O_NOCTTY | O_NDELAY); //file descriptor
         if (actualConfig[i].serialNumber < 0)
             printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
+        fcntl(actualConfig[i].serialNumber, F_SETFL, 0);
     }
 }
 
