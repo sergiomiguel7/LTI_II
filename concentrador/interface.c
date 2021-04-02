@@ -154,11 +154,12 @@ void handleBegin(char *str)
 void receiveData(char *readBuf)
 {
     int readed = 0;
+    int total = 0;
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = comRead(actualConfig[i].serialNumber, readBuf, SIZE1);
+            readed = comReadBytes(actualConfig[i].serialNumber, readBuf, SIZE_DATA, total, 5000);
             printf("Li da COM %d\n", readed);
 
             if (readed > 0)
@@ -193,9 +194,13 @@ void receiveData(char *readBuf)
                             printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
                         }
                     }
+                    if(readed > SIZE_DATA)
+                        total = 0;
+                    else
+                        total+=readed;
                 }
             }
-            usleep(500000); /* sleep for 100 milliSeconds */
+            //usleep(500000); /* sleep for 100 milliSeconds */
         }
     }
 }

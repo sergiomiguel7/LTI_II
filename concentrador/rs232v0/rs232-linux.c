@@ -214,6 +214,29 @@ int comRead(int index, char * buffer, size_t len)
     return res;
 }
 
+int comReadBytes(int index, char* buffer, size_t len, int numBytes, uint16_t timeoutMs){
+    int bytesRead = 0, res = 0;
+    while(bytesRead < numBytes){
+        if(index >= noDevices || index < 0)
+            return 0;
+        if(comDevices[index].handle <= 0)
+            return 0;
+        int res = read(comDevices[index].handle, buffer+bytesRead, (numBytes-bytesRead));
+        if(res<0)
+            res = 0;
+        else{
+            if(res > 0)
+                bytesRead = bytesRead+res;
+        }
+        usleep(1000);
+        timeoutMs--;
+        if(timeoutMs==0){
+            return bytesRead;
+        }
+    }
+    return bytesRead;
+}
+
 /*****************************************************************************/
 int _BaudFlag(int BaudRate)
 {

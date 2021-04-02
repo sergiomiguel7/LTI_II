@@ -6,7 +6,7 @@
 
     The MIT License (MIT)
 
-    Copyright (c) 2013-2015 Frédéric Meslin, Florent Touchard
+    Copyright (c) 2013-2015 Frï¿½dï¿½ric Meslin, Florent Touchard
     Email: fredericmeslin@hotmail.com
     Website: www.fredslab.net
     Twitter: @marzacdev
@@ -34,13 +34,14 @@
 #define RS232_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-    #include <stdint.h>
-    #include <stdlib.h>
+#include <stdint.h>
+#include <stdlib.h>
 
-/*****************************************************************************/
+    /*****************************************************************************/
     /* Doxywizard specific */
     /**
     * \mainpage RS232
@@ -57,15 +58,15 @@ extern "C" {
     * Website: www.fredslab.net <br>
     * Twitter: \@marzacdev <br>
     */
-    
-/*****************************************************************************/
+
+    /*****************************************************************************/
     /**
      * \fn int comEnumerate()
      * \brief Enumerate available serial ports (Serial, USB serial, Bluetooth serial)
      * \return number of enumerated ports
      */
     int comEnumerate();
-    
+
     /**
      * \fn int comGetNoPorts()
      * \brief Return the number of enumerated ports
@@ -76,7 +77,7 @@ extern "C" {
     /**
      * \fn int comTerminate()
      * \brief Release ports and memory resources used by the library
-     */    
+     */
     void comTerminate();
 
     /**
@@ -84,26 +85,26 @@ extern "C" {
      * \brief Get port user-friendly name
      * \param[in] index port index
      * \return null terminated port name
-     */    
-    const char * comGetPortName(int index);
+     */
+    const char *comGetPortName(int index);
 
     /**
      * \fn const char * comGetInternalName(int index)
      * \brief Get port operating-system name
      * \param[in] index port index
      * \return null terminated port name
-     */        
-    const char * comGetInternalName(int index);
-    
+     */
+    const char *comGetInternalName(int index);
+
     /**
      * \fn int comFindPort(const char * name)
      * \brief Try to find a port given its user-friendly name
      * \param[in] name port name (case sensitive)
      * \return index of found port or -1 if not enumerated
-     */        
-    int comFindPort(const char * name);
+     */
+    int comFindPort(const char *name);
 
-/*****************************************************************************/
+    /*****************************************************************************/
     /**
      * \fn int comOpen(int index, int baudrate)
      * \brief Try to open a port at a specific baudrate
@@ -111,23 +112,23 @@ extern "C" {
      * \param[in] index port index
      * \param[in] baudrate port baudrate
      * \return 1 if opened, 0 if not available
-     */        
+     */
     int comOpen(int index, int baudrate);
-    
+
     /**
      * \fn void comClose(int index)
      * \brief Close an opened port
      * \param[in] index port index
-     */            
+     */
     void comClose(int index);
-    
+
     /**
      * \fn void comCloseAll()
      * \brief Close all opened ports
-     */            
+     */
     void comCloseAll();
 
-/*****************************************************************************/
+    /*****************************************************************************/
     /**
      * \fn int comWrite(int index, const char * buffer, size_t len)
      * \brief Write data to the port (non-blocking)
@@ -135,9 +136,9 @@ extern "C" {
      * \param[in] buffer pointer to transmit buffer
      * \param[in] len length of transmit buffer in bytes
      * \return number of bytes transferred
-     */            
-    int comWrite(int index, const char * buffer, size_t len);
-    
+     */
+    int comWrite(int index, const char *buffer, size_t len);
+
     /**
      * \fn int comRead(int index, const char * buffer, size_t len)
      * \brief Read data from the port (non-blocking)
@@ -145,8 +146,18 @@ extern "C" {
      * \param[in] buffer pointer to receive buffer
      * \param[in] len length of receive buffer in bytes
      * \return number of bytes transferred
-     */                
-    int comRead(int index, char * buffer, size_t len);
+     */
+    int comRead(int index, char *buffer, size_t len);
+
+    /**
+     * \fn int comReadBytes(int index, const char * buffer, size_t len)
+     * \brief Read data from the port (non-blocking)
+     * \param[in] index port index
+     * \param[in] buffer pointer to receive buffer
+     * \param[in] len length of receive buffer in bytes
+     * \return number of bytes transferred
+     */
+    int comReadBytes(int index, char *buffer, size_t len, int numBytes, uint16_t timeoutMs);
 
 #ifdef __cplusplus
 }
