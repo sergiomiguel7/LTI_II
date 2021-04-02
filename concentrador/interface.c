@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <time.h>
 #include "api.h"
-#include "rs232/rs232.h"
+#include "rs232v0/rs232-linux.c"
 
 //define functions
 void handler(int sign);
@@ -38,7 +38,7 @@ void handler(int sig)
             //stop to sensor
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
-            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            comWrite(actualConfig[i].serialNumber, write, size);
         }
     }
     //close all
@@ -53,10 +53,12 @@ int main()
     char bufWrite[SIZE3];
     char bufRead[SIZE_DATA];
 
+    comEnumerate();
+
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    //receiveData(bufRead);
+    receiveData(bufRead);
 }
 
 /**
@@ -108,13 +110,13 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        actualConfig[i].serialNumber = RS232_GetPortnr(actualConfig[i].portSerial);
+        actualConfig[i].serialNumber = comFindPort(actualConfig[i].portSerial);
         if (actualConfig[i].serialNumber == -1)
         {
             actualConfig[i].serialNumber = 6;
         }
-        int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
-        if (status)
+        int status = comOpen(actualConfig[i].serialNumber, 115200);
+        if (!status)
         {
             actualConfig[i].opened = status;
             printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
@@ -135,7 +137,7 @@ void handleBegin(char *str)
         {
             printf("%s \n", str);
             int size = buildStartPacket(str, i);
-            RS232_SendBuf(actualConfig[i].serialNumber, str, size);
+            comWrite(actualConfig[i].serialNumber, str, size);
         }
     }
 
@@ -156,7 +158,7 @@ void receiveData(char *readBuf)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA - 1);
+            readed = comRead(actualConfig[i].serialNumber, readBuf, SIZE1);
             printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
@@ -196,7 +198,7 @@ void receiveData(char *readBuf)
                     }
                 }
             }
-            usleep(100000); /* sleep for 100 milliSeconds */
+            usleep(500000); /* sleep for 100 milliSeconds */
         }
     }
 }
@@ -209,13 +211,8 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (actualConfig[i].opened)
-        {
-            RS232_CloseComport(actualConfig[i].serialNumber);
-        }
-    }
+    comCloseAll();
+
 }
 
 /**
