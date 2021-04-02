@@ -20,6 +20,7 @@ void handleBegin(char *str);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 void receiveData(char *readBuf);
+void sendPacket();
 
 /**
  * @param sig - signal identifier
@@ -56,7 +57,7 @@ int main()
     readConfigFile();
     openSerial();
     handleBegin(bufWrite);
-    //receiveData(bufRead);
+    receiveData(bufRead);
 }
 
 /**
@@ -90,6 +91,8 @@ void readConfigFile()
         default:
             strcpy(actualConfig[configuredPorts].portSerial, token);
             actualConfig[configuredPorts].opened = 1;
+            strcpy(actualConfig[configuredPorts].GPS, "100;200");
+            strcpy(actualConfig[configuredPorts].area, "Quarto");
             configuredPorts++;
             break;
         }
@@ -139,8 +142,24 @@ void handleBegin(char *str)
         }
     }
 
-    fdData = open("log/data.txt", O_RDWR |O_CREAT | O_APPEND, 0666);
-    fdErrors = open("log/errors.txt", O_RDWR |O_CREAT | O_APPEND,0666);
+    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+}
+
+/**
+ * send packet to resolved issue on bluetooth connection with sensor
+ * basic awake packet
+ **/
+void sendPacket()
+{
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
+            char str[6] = "awake";
+            RS232_SendBuf(actualConfig[i].serialNumber, str, 6);
+        }
+    }
 }
 
 /**
@@ -152,16 +171,15 @@ void handleBegin(char *str)
 void receiveData(char *readBuf)
 {
     int readed = 0;
+    char entry[SIZE_DATA];
     while (1)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA - 1);
-            printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
-
+            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
+            
             if (readed > 0)
             {
-                readBuf[readed] = 0;
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
                     actualConfig[i].iss = readBuf[1];
@@ -171,11 +189,9 @@ void receiveData(char *readBuf)
 
                     if (readBuf[0] == ERROR)
                     {
-                        /*                         
-                        char entry[SIZE1];
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                        actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry)); */
+                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
+                        write(fdErrors, entry, sizeof(entry));
                         printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
@@ -183,19 +199,16 @@ void receiveData(char *readBuf)
                         for (int j = 7; j < readed; j = j + 4)
                         {
                             float value = joinFloat(readBuf + j);
-                            char entry[SIZE1];
-                            printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
-                            readBuf[j] = '.';
-                            /*  
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
-                            actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
-                            int n = write(fdData, entry, sizeof(entry));
-                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
+                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+                            int n = write(fdData, entry, strlen(entry));
+                            printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                         }
-                        receiveData(readBuf);
                     }
                 }
+                memset(entry, 0, sizeof entry);
             }
+            sendPacket();
             usleep(100000); /* sleep for 100 milliSeconds */
         }
     }

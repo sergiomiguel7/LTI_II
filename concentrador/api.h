@@ -5,7 +5,7 @@
 #define SIZE1 256
 #define SIZE2 512
 #define SIZE3 1024
-#define SIZE_DATA 126
+#define SIZE_DATA 127
 #define MAX_SENSOR 10
 #define START 0
 #define STOP 1
