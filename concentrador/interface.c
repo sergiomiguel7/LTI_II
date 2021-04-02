@@ -169,7 +169,7 @@ void receiveData(char *readBuf)
     {
         for (int i = 0; i < configuredPorts; i++)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA - 1);
+            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
             printf("Li da COM %d => do config number: %d de porta serial: %s\n", readed, actualConfig[i].serialNumber, actualConfig[i].portSerial);
 
             if (readed > 0)
@@ -182,12 +182,11 @@ void receiveData(char *readBuf)
                     uint8_t type = readBuf[6];
 
                     if (readBuf[0] == ERROR)
-                    {
-                        /*                         
+                    {                                                
                         char entry[SIZE1];
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
                         actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry)); */
+                        write(fdErrors, entry, sizeof(entry)); 
                         printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
                     }
                     else
@@ -197,12 +196,10 @@ void receiveData(char *readBuf)
                             float value = joinFloat(readBuf + j);
 
                             printf("DATA =>  ISS: %u, TIMESTAMP: %u, TIPO: %c, VALOR: %f\n", actualConfig[i].iss, timestamp, (char)type, value);
-                            /*  
                             char entry[SIZE1];
                             sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                             actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, sizeof(entry));
-                            printf("escrevi: %d com o seguinte payload: %s\n", n, entry);*/
                         }
                     }
                 }
