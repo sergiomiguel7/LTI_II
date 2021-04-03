@@ -1,5 +1,7 @@
-all:
-	gcc interface.c utils.c rs232/rs232.c -o out/interface.o
+all: compile config
+
+compile: 
+	gcc interface.c communication.c utils.c rs232/rs232.c -o out/interface.o
 config:
 	sh scripts/connection.sh
 	sleep 2
