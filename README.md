@@ -6,3 +6,17 @@
 - José Pedroso (@fariapedroso)
 - Carlos Oliveira (@CMCO1922)
 - João Alves (@Joaoalves89405)
+
+# Get started
+
+### Arduino
+
+- load the arduino folder on your Arduino IDE
+- connect your Arduino device
+- compile and run
+
+### Concentrador
+
+- cd to concentrador folder
+- run the command **make**
+- open other terminal in the same directory and run the command **make run**
