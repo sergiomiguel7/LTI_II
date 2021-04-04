@@ -1,7 +1,10 @@
+CC = gcc
+
 all: compile config
 
-compile: 
-	gcc interface.c communication.c utils.c rs232/rs232.c -o out/interface.o
+compile:
+	mkdir -p out
+	$(CC) interface.c communication.c utils.c rs232/rs232.c -o out/interface.o
 config:
 	sh scripts/connection.sh
 	sleep 2

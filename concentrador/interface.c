@@ -17,10 +17,11 @@ void openSerial();
 void readConfigFile();
 void printConfig();
 void handleBegin(char *str);
-int buildStartPacket(char *str, int index);
-int buildStopPacket(char *str, uint8_t stopCode);
 void receiveData(char *readBuf);
 void sendPacket();
+int buildStartPacket(char *str, int index);
+int buildStopPacket(char *str, uint8_t stopCode);
+
 
 /**
  * @param sig - signal identifier

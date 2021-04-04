@@ -12,7 +12,6 @@
 
 // ------- BUILD PACKETS ---------------
 
-
 /**
 * @param str - packet to send
 * 
@@ -44,10 +43,7 @@ int buildStopPacket(char *str, uint8_t stopCode)
     return 2;
 }
 
-
-
 // ----------------- IO OPERATIONS -------------
-
 
 /*
 * function to open the config file declarated portSerial to receive
@@ -90,7 +86,6 @@ void closeFiles()
 
 
 // ----------- COMMUNICATION HANDLING (RECEIVE AND SEND PACKETS) ---------------
-
 
 /**
  * @param str - buffer to write on serial port to arduino
