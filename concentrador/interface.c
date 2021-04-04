@@ -68,7 +68,7 @@ int main()
 void readConfigFile()
 {
     int fd = open(CONFIG_FILE, O_RDONLY);
-    char configLine[1024];
+    char configLine[SIZE3];
     int sizeRead, nmrArgs = 0;
 
     if (fd < 0)
