@@ -9,7 +9,6 @@
 #include "rs232/rs232.h"
 #include "api.h"
 
-
 // ------- BUILD PACKETS ---------------
 
 /**
@@ -84,7 +83,6 @@ void closeFiles()
     }
 }
 
-
 // ----------- COMMUNICATION HANDLING (RECEIVE AND SEND PACKETS) ---------------
 
 /**
@@ -158,13 +156,28 @@ void receiveData(char *readBuf)
                     }
                     else
                     {
-                        for (int j = 7; j < readed; j = j + 4)
+                        if (readBuf[0] == DATA1)
+                            for (int j = 7; j < readed; j = j + 4)
+                            {
+                                float value = joinFloat(readBuf + j);
+                                sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
+                                        actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+                                int n = write(fdData, entry, strlen(entry));
+                                printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
+                            }
+                        else if (readBuf[0] == DATA2)
                         {
-                            float value = joinFloat(readBuf + j);
-                            sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
-                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
+                            char state[12];
+                            uint8_t value = readBuf[7];
+                            if(value) 
+                                strcpy(state, "Ligado"); 
+                            else
+                                strcpy(state, "Desligado");                                    
+                                
+                            sprintf(entry, "%u;%s;%s;%u;%c;%s\n",
+                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, state);
                             int n = write(fdData, entry, strlen(entry));
-                            printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
+                            printf("Recebi valor %d e escrevi no ficheiro %d\n", value, n);
                         }
                     }
                 }
