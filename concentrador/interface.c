@@ -19,9 +19,9 @@ void printConfig();
 void handleBegin(char *str);
 void receiveData(char *readBuf);
 void sendPacket();
+void showMenu();
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
-
 
 /**
  * @param sig - signal identifier
@@ -43,8 +43,7 @@ void handler(int sig)
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
         }
     }
-    //close all
-    closeFiles();
+    showMenu();
 }
 
 int main()
@@ -52,13 +51,49 @@ int main()
     signal(SIGINT, handler);
     configuredPorts = 0;
 
-    char bufWrite[SIZE3];
-    char bufRead[SIZE_DATA];
-
     readConfigFile();
-    openSerial();
-    handleBegin(bufWrite);
-    receiveData(bufRead);
+    showMenu();
+
+    // openSerial();
+    // handleBegin(bufWrite);
+    // receiveData(bufRead);
+}
+
+void showMenu()
+{
+    char buffer[SIZE1], bufWrite[SIZE3], bufRead[SIZE_DATA];
+
+    int fd = open(MENU_FILE, O_RDONLY), n, option;
+    while ((n = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        write(1, buffer, strlen(buffer));
+    }
+
+    while (option != 0)
+    {   
+        printf("\nOpção: ");
+        scanf("%d", &option);
+        switch (option)
+        {
+        case 1:
+            openSerial();
+            handleBegin(bufWrite);
+            receiveData(bufRead);
+            break;
+        case 2:
+            printf("Not available yet :c");
+            break;
+        case 3:
+            printf("Not available yet :c");
+            break;
+        case 0: 
+            closeFiles();
+            _exit(0);
+        default:
+            printf("Opção inválida :c");
+            break;
+        }
+    }
 }
 
 /**
@@ -103,4 +138,3 @@ void readConfigFile()
     }
     printf("Number of devices found: %d\n", configuredPorts);
 }
-
