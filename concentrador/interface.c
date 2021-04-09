@@ -61,6 +61,9 @@ int main()
     showMenu();
 }
 
+/**
+ * show the current menu configured on menu.txt 
+ **/
 void showMenu()
 {
     char buffer[SIZE1];
@@ -74,6 +77,12 @@ void showMenu()
     handleOptions(-1);
 }
 
+
+
+/**
+ * handle the selected option from user
+ * foreach function it's created a child process to handle the functionality
+ * */
 void handleOptions(int option)
 {
     char bufWrite[SIZE3], bufRead[SIZE_DATA];
