@@ -40,6 +40,9 @@ int fdLogs, fdErrors, fdData;
 //numero sensores ligados
 int configuredPorts;
 
+//child process
+int parentPid, childPid, status;
+
 //estruturas para conversao de bytes
 typedef union
 {
