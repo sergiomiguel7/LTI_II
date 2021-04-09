@@ -1,6 +1,7 @@
 #define ADDR "127.0.0.1"
 #define PORT 8000
 #define CONFIG_FILE "../env/config.txt"
+#define MENU_FILE "../env/menu.txt"
 #define SIZE0 32
 #define SIZE1 256
 #define SIZE2 512
@@ -38,6 +39,9 @@ int fdLogs, fdErrors, fdData;
 
 //numero sensores ligados
 int configuredPorts;
+
+//child process
+int parentPid, childPid, status;
 
 //estruturas para conversao de bytes
 typedef union

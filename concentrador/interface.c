@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/wait.h>
 #include "api.h"
 #include "rs232/rs232.h"
 
@@ -19,9 +20,10 @@ void printConfig();
 void handleBegin(char *str);
 void receiveData(char *readBuf);
 void sendPacket();
+void showMenu();
+void handleOptions(int option);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
-
 
 /**
  * @param sig - signal identifier
@@ -33,32 +35,104 @@ void handler(int sig)
     if (sig != SIGINT)
         return;
 
-    for (int i = 0; i < configuredPorts; i++)
+    if (getpid() != parentPid)
     {
-        if (actualConfig[i].opened)
+        for (int i = 0; i < configuredPorts; i++)
         {
-            //stop to sensor
-            char write[SIZE1];
-            int size = buildStopPacket(write, 0);
-            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            if (actualConfig[i].opened)
+            {
+                //stop to sensor
+                char write[SIZE1];
+                int size = buildStopPacket(write, 0);
+                RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            }
         }
+        _exit(0);
     }
-    //close all
-    closeFiles();
 }
 
 int main()
 {
     signal(SIGINT, handler);
     configuredPorts = 0;
-
-    char bufWrite[SIZE3];
-    char bufRead[SIZE_DATA];
+    parentPid = getpid();
 
     readConfigFile();
-    openSerial();
-    handleBegin(bufWrite);
-    receiveData(bufRead);
+    showMenu();
+}
+
+/**
+ * show the current menu configured on menu.txt 
+ **/
+void showMenu()
+{
+    char buffer[SIZE1];
+
+    int fd = open(MENU_FILE, O_RDONLY), n, option = 10;
+    while ((n = read(fd, buffer, sizeof(buffer))) > 0)
+    {
+        write(1, buffer, strlen(buffer));
+    }
+    close(fd);
+    handleOptions(-1);
+}
+
+
+
+/**
+ * handle the selected option from user
+ * foreach function it's created a child process to handle the functionality
+ * */
+void handleOptions(int option)
+{
+    char bufWrite[SIZE3], bufRead[SIZE_DATA];
+
+    while (option != 0)
+    {
+        printf("\nOpção: ");
+        scanf("%d", &option);
+        getchar();
+
+        if (option == 0)
+        {
+            closeFiles();
+            _exit(0);
+        }
+        else if (option > 3)
+        {
+            printf("Opção inválida :c");
+            handleOptions(-1);
+        }
+        else
+        {
+            childPid = fork();
+            if (!childPid)
+            {
+                switch (option)
+                {
+                case 1:
+                    openSerial();
+                    handleBegin(bufWrite);
+                    receiveData(bufRead);
+                    break;
+                case 2:
+                    _exit(1);
+                    break;
+                case 3:
+                    _exit(1);
+                    break;
+                }
+            }
+            else
+            {
+                int child = wait(&status);
+                if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
+                    write(1, "\nNot available yet :c", 21);
+                else
+                    showMenu();
+            }
+        }
+    }
 }
 
 /**
@@ -68,7 +142,7 @@ int main()
 void readConfigFile()
 {
     int fd = open(CONFIG_FILE, O_RDONLY);
-    char configLine[1024];
+    char configLine[SIZE3];
     int sizeRead, nmrArgs = 0;
 
     if (fd < 0)
@@ -103,4 +177,3 @@ void readConfigFile()
     }
     printf("Number of devices found: %d\n", configuredPorts);
 }
-
