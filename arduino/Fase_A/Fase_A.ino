@@ -24,6 +24,8 @@ const int pirPin = 27;
 //0 -> desligado , 1 -> ligado
 bool led = 0;
 
+bool var = false;
+
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
@@ -119,13 +121,30 @@ void sensorSystem() {
 
   float voltage_value =  ((ldrValue * 3.3 ) / (4095));
 
-  if (voltage_value <= 0.75) {
-    digitalWrite(ledPin, HIGH);
-    led = 1;
-  } else {
-    digitalWrite(ledPin, LOW);
-    led = 0;
+
+
+  if (pirStat == HIGH) {
+    if (voltage_value <= 0.75) {
+      digitalWrite(ledPin, HIGH);
+      led = 1;
+    } else {
+      digitalWrite(ledPin, LOW);
+      led = 0;
+    }
+
+
+    if (var == false) {
+      data2Packet(aux, currentTimestamp(), led);
+      SerialBT.write(aux, DATA2PACKETSIZE);
+      Serial.println((String) "LED " + led);
+    }
+    var = true;
   }
+  else {
+    digitalWrite(ledPin, LOW);
+    var = false;
+  }
+
 
   if (addInfo(dataPacket, voltage_value, pos)) {
     pos = pos + 4;
@@ -136,11 +155,6 @@ void sensorSystem() {
   } else {
     pos = pos + 4;
   }
-  //CASO HAJA MUDANCA DE ESTADO(RE FAZER PIRANALYSIS()
-  /*if (pirStat == HIGH) {
-    data2Packet(aux, currentTimestamp(), pirStat);
-    SerialBT.write(aux, DATA2PACKETSIZE);
-    }*/
 
 }
 
