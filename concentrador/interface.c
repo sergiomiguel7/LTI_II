@@ -49,6 +49,7 @@ void stopSensor(int sig)
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            RS232_CloseComport(actualConfig[i].serialNumber);
             _exit(0);
         }
     }
