@@ -134,7 +134,7 @@ void showDevices()
     {
         if (actualConfig[i].opened)
         {
-            printf("Option: %d -> ISS: %d\n", i, actualConfig[i].iss);
+            printf("Option: %d -> ISS: %d Pid -> %d\n", i, actualConfig[i].iss, actualConfig[i].pid);
         }
     }
 }
