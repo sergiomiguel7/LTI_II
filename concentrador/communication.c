@@ -102,11 +102,12 @@ void handleBegin(char *str, char *receive)
         if (actualConfig[i].opened)
         {
             pid_t pid = fork();
+            actualConfig[i].pid = pid;
+
             if (!pid)
             {
                 int size = buildStartPacket(str, i);
                 RS232_SendBuf(actualConfig[i].serialNumber, str, size);
-                actualConfig[i].pid = getpid();
                 receiveData(receive, i);
             }
         }
