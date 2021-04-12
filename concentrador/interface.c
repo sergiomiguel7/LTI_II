@@ -22,7 +22,8 @@ void receiveData(char *readBuf, int index);
 void showDevices();
 void sendPacket();
 void showMenu();
-void handleOptions(int option);
+void handleOptions();
+void handleStop();
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 
@@ -47,7 +48,6 @@ void stopSensor(int sig)
             //stop to sensor
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
-            actualConfig[i].opened = 0;
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
             _exit(0);
         }
@@ -59,10 +59,9 @@ int main()
     signal(SIGUSR1, stopSensor);
     configuredPorts = 0;
     showRealTime = 0;
-    parentPid = getpid();
 
     readConfigFile();
-    showMenu();
+    handleOptions();
 }
 
 /**
@@ -70,76 +69,62 @@ int main()
  **/
 void showMenu()
 {
-    char buffer[SIZE3];
+    char buffer[4096];
 
-    int fd = open(MENU_FILE, O_RDONLY), n, option = 10;
+    int fd = open(MENU_FILE, O_RDONLY), n;
     while ((n = read(fd, buffer, sizeof(buffer))) > 0)
     {
         write(1, buffer, strlen(buffer));
     }
     close(fd);
-    handleOptions(-1);
 }
 
 /**
  * handle the selected option from user
  * foreach function it's created a child process to handle the functionality
  * */
-void handleOptions(int option)
+void handleOptions()
 {
     char bufWrite[SIZE3], bufRead[SIZE_DATA];
-    int device = 0;
+    int option;
+    pid_t pid;
 
-    while (option != 0)
+    do
     {
+        showMenu();
         printf("\nOpção: ");
         scanf("%d", &option);
         getchar();
 
-        if (option == 0)
+        switch (option)
         {
+        case 0:
             closeFiles();
             _exit(0);
-        }
-        else if (option > 4)
-        {
+        case 1:
+            openSerial();
+            handleBegin(bufWrite, bufRead);
+            break;
+        case 2:
+            _exit(1);
+            break;
+        case 3:
+            _exit(1);
+            break;
+        case 4:
+            pid = fork();
+            if(!pid)
+                handleStop();
+            break;
+        default:
             printf("Opção inválida :c");
-            handleOptions(-1);
+            break;
         }
-        else
-        {
-            childPid = fork();
-            if (!childPid)
-            {
-                printf("FIlho pid: %d\n", getpid());
-                switch (option)
-                {
-                case 1:
-                    openSerial();
-                    handleBegin(bufWrite, bufRead);
-                    break;
-                case 2:
-                    _exit(1);
-                    break;
-                case 3:
-                    _exit(1);
-                    break;
-                case 4:
-                    showDevices();
-                    printf("\nSensor: ");
-                    scanf("%d", &device);
-                    getchar();
-                    if (device > 0 && device < configuredPorts)
-                        kill(actualConfig[device].pid, SIGUSR1);
-                    _exit(0);
-                    break;
-                }
-            }else{
-                if(option == 4)
-                    wait(NULL);
-            }
-        }
-    }
+
+        if(option == 4)
+            wait(NULL);
+
+    } while (option != 0);
 }
 
 void showDevices()
@@ -151,6 +136,18 @@ void showDevices()
             printf("Option: %d -> ISS: %d\n", i, actualConfig[i].iss);
         }
     }
+}
+
+void handleStop()
+{
+    showDevices();
+    int device = 0;
+    printf("Sensor: ");
+    scanf("%d", &device);
+    getchar();
+    if (device > 0 && device < configuredPorts)
+        kill(actualConfig[device].pid, SIGUSR1);
+    _exit(0);
 }
 
 /**

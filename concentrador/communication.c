@@ -104,7 +104,6 @@ void handleBegin(char *str, char *receive)
             pid_t pid = fork();
             if (!pid)
             {
-                printf("%s \n", str);
                 int size = buildStartPacket(str, i);
                 RS232_SendBuf(actualConfig[i].serialNumber, str, size);
                 actualConfig[i].pid = getpid();

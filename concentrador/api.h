@@ -40,9 +40,6 @@ int fdLogs, fdErrors, fdData;
 //numero sensores ligados
 int configuredPorts;
 
-//child process
-int parentPid, childPid, status;
-
 //real time
 int showRealTime;
 
