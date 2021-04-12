@@ -17,8 +17,9 @@ void closeFiles();
 void openSerial();
 void readConfigFile();
 void printConfig();
-void handleBegin(char *str);
-void receiveData(char *readBuf);
+void handleBegin(char *str, char *receive);
+void receiveData(char *readBuf, int index);
+void showDevices();
 void sendPacket();
 void showMenu();
 void handleOptions(int option);
@@ -30,31 +31,34 @@ int buildStopPacket(char *str, uint8_t stopCode);
  * 
  * handles the sigint signal and closes everything 
  **/
-void handler(int sig)
+void stopSensor(int sig)
 {
-    if (sig != SIGINT)
+    if (sig != SIGUSR1)
         return;
 
-    if (getpid() != parentPid)
+    pid_t pid = getpid();
+    char aux[23];
+    sprintf(aux, "Recebi sinal no pid %d", pid);
+    write(1, aux, 23);
+    for (int i = 0; i < configuredPorts; i++)
     {
-        for (int i = 0; i < configuredPorts; i++)
+        if (pid == actualConfig[i].pid)
         {
-            if (actualConfig[i].opened)
-            {
-                //stop to sensor
-                char write[SIZE1];
-                int size = buildStopPacket(write, 0);
-                RS232_SendBuf(actualConfig[i].serialNumber, write, size);
-            }
+            //stop to sensor
+            char write[SIZE1];
+            int size = buildStopPacket(write, 0);
+            actualConfig[i].opened = 0;
+            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            _exit(0);
         }
-        _exit(0);
     }
 }
 
 int main()
 {
-    signal(SIGINT, handler);
+    signal(SIGUSR1, stopSensor);
     configuredPorts = 0;
+    showRealTime = 0;
     parentPid = getpid();
 
     readConfigFile();
@@ -66,7 +70,7 @@ int main()
  **/
 void showMenu()
 {
-    char buffer[SIZE1];
+    char buffer[SIZE3];
 
     int fd = open(MENU_FILE, O_RDONLY), n, option = 10;
     while ((n = read(fd, buffer, sizeof(buffer))) > 0)
@@ -77,8 +81,6 @@ void showMenu()
     handleOptions(-1);
 }
 
-
-
 /**
  * handle the selected option from user
  * foreach function it's created a child process to handle the functionality
@@ -86,6 +88,7 @@ void showMenu()
 void handleOptions(int option)
 {
     char bufWrite[SIZE3], bufRead[SIZE_DATA];
+    int device = 0;
 
     while (option != 0)
     {
@@ -98,7 +101,7 @@ void handleOptions(int option)
             closeFiles();
             _exit(0);
         }
-        else if (option > 3)
+        else if (option > 4)
         {
             printf("Opção inválida :c");
             handleOptions(-1);
@@ -108,12 +111,12 @@ void handleOptions(int option)
             childPid = fork();
             if (!childPid)
             {
+                printf("FIlho pid: %d\n", getpid());
                 switch (option)
                 {
                 case 1:
                     openSerial();
-                    handleBegin(bufWrite);
-                    receiveData(bufRead);
+                    handleBegin(bufWrite, bufRead);
                     break;
                 case 2:
                     _exit(1);
@@ -121,16 +124,31 @@ void handleOptions(int option)
                 case 3:
                     _exit(1);
                     break;
+                case 4:
+                    showDevices();
+                    printf("\nSensor: ");
+                    scanf("%d", &device);
+                    getchar();
+                    if (device > 0 && device < configuredPorts)
+                        kill(actualConfig[device].pid, SIGUSR1);
+                    _exit(0);
+                    break;
                 }
+            }else{
+                if(option == 4)
+                    wait(NULL);
             }
-            else
-            {
-                int child = wait(&status);
-                if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
-                    write(1, "\nNot available yet :c", 21);
-                else
-                    showMenu();
-            }
+        }
+    }
+}
+
+void showDevices()
+{
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
+            printf("Option: %d -> ISS: %d\n", i, actualConfig[i].iss);
         }
     }
 }

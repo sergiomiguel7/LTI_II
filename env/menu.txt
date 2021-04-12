@@ -4,4 +4,5 @@ Bem vindo ao menu de admininstração!
 1 - Arrancar sistema
 2 - Definir estado led nos sensores disponíveis
 3 - Atualizar coordenadas GPS
+4 - Parar um sensor
 0 - Sair

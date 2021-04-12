@@ -9,6 +9,8 @@
 #include "rs232/rs232.h"
 #include "api.h"
 
+void receiveData(char *readBuf, int index);
+
 // ------- BUILD PACKETS ---------------
 
 /**
@@ -64,6 +66,9 @@ void openSerial()
             printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
         }
     }
+
+    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
 /**
@@ -90,20 +95,23 @@ void closeFiles()
  * 
  * this function handles the starter packet and create the log files
  **/
-void handleBegin(char *str)
+void handleBegin(char *str, char *receive)
 {
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
         {
-            printf("%s \n", str);
-            int size = buildStartPacket(str, i);
-            RS232_SendBuf(actualConfig[i].serialNumber, str, size);
+            pid_t pid = fork();
+            if (!pid)
+            {
+                printf("%s \n", str);
+                int size = buildStartPacket(str, i);
+                RS232_SendBuf(actualConfig[i].serialNumber, str, size);
+                actualConfig[i].pid = getpid();
+                receiveData(receive, i);
+            }
         }
     }
-
-    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
-    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
 /**
@@ -128,63 +136,60 @@ void sendPacket()
  * DATAx => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> TGM | 7... -> VALi| , x = 1 or 2
  * ERROR => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> ERR |
  **/
-void receiveData(char *readBuf)
+void receiveData(char *readBuf, int index)
 {
     int readed = 0;
     char entry[SIZE_DATA];
     while (1)
     {
-        for (int i = 0; i < configuredPorts; i++)
+        readed = RS232_PollComport(actualConfig[index].serialNumber, readBuf, SIZE_DATA);
+
+        if (readed > 0)
         {
-            readed = RS232_PollComport(actualConfig[i].serialNumber, readBuf, SIZE_DATA);
-
-            if (readed > 0)
+            if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
             {
-                if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
+                actualConfig[index].iss = readBuf[1];
+                uint32_t timestamp = join32(readBuf + 2);
+
+                uint8_t type = readBuf[6];
+
+                if (readBuf[0] == ERROR)
                 {
-                    actualConfig[i].iss = readBuf[1];
-                    uint32_t timestamp = join32(readBuf + 2);
-
-                    uint8_t type = readBuf[6];
-
-                    if (readBuf[0] == ERROR)
-                    {
-                        sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                                actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, type);
-                        write(fdErrors, entry, sizeof(entry));
-                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[i].iss, timestamp, type);
-                    }
-                    else
-                    {
-                        if (readBuf[0] == DATA1)
-                            for (int j = 7; j < readed; j = j + 4)
-                            {
-                                float value = joinFloat(readBuf + j);
-                                sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
-                                        actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, value);
-                                int n = write(fdData, entry, strlen(entry));
-                                printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
-                            }
-                        else if (readBuf[0] == DATA2)
+                    sprintf(entry, "%u;%s;%s;%u;%u;\n",
+                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, type);
+                    write(fdErrors, entry, sizeof(entry));
+                    printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[index].iss, timestamp, type);
+                }
+                else
+                {
+                    if (readBuf[0] == DATA1)
+                        for (int j = 7; j < readed; j = j + 4)
                         {
-                            char state[12];
-                            uint8_t value = readBuf[7];
-                            if(value) 
-                                strcpy(state, "Ligado"); 
-                            else
-                                strcpy(state, "Desligado");                                    
-                                
-                            sprintf(entry, "%u;%s;%s;%u;%c;%s\n",
-                                    actualConfig[i].iss, actualConfig[i].area, actualConfig[i].GPS, timestamp, (char)type, state);
+                            float value = joinFloat(readBuf + j);
+                            sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
+                                    actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, value);
                             int n = write(fdData, entry, strlen(entry));
-                            printf("Recebi valor %d e escrevi no ficheiro %d\n", value, n);
+                            //printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                         }
+                    else if (readBuf[0] == DATA2)
+                    {
+                        char state[12];
+                        uint8_t value = readBuf[7];
+                        if (value)
+                            strcpy(state, "Ligado");
+                        else
+                            strcpy(state, "Desligado");
+
+                        sprintf(entry, "%u;%s;%s;%u;%c;%s\n",
+                                actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
+                        int n = write(fdData, entry, strlen(entry));
+                        //printf("Recebi valor %d e escrevi no ficheiro %d\n", value, n);
                     }
                 }
-                memset(entry, 0, sizeof entry);
             }
-            sendPacket();
-            usleep(100000); /* sleep for 100 milliSeconds */
+            memset(entry, 0, sizeof entry);
         }
+        sendPacket();
+        usleep(100000); /* sleep for 100 milliSeconds */
     }
 }
