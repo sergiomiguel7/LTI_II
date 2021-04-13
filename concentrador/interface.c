@@ -142,11 +142,10 @@ void handleStop()
     scanf("%d", &device);
     getchar();
     printf("device escolhido :%d \n", device);
-    if (device > 0 && device < configuredPorts){
+    if (device >= 0 && device < configuredPorts){
         printf("entrei \n");
         kill(actualConfig[device].pid, SIGUSR1);
     }
-    _exit(0);
 }
 
 /**
