@@ -113,17 +113,12 @@ void handleOptions()
             _exit(1);
             break;
         case 4:
-            pid = fork();
-            if(!pid)
-                handleStop();
+            handleStop();
             break;
         default:
             printf("Opção inválida :c");
             break;
         }
-
-        if(option == 4)
-            wait(NULL);
 
     } while (option != 0);
 }
@@ -146,9 +141,9 @@ void handleStop()
     printf("Sensor: ");
     scanf("%d", &device);
     getchar();
-    printf("device escolhido :%d \n");
+    printf("device escolhido :%d \n", device);
     if (device > 0 && device < configuredPorts){
-            printf("entrei \n");
+        printf("entrei \n");
         kill(actualConfig[device].pid, SIGUSR1);
     }
     _exit(0);
