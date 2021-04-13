@@ -146,8 +146,11 @@ void handleStop()
     printf("Sensor: ");
     scanf("%d", &device);
     getchar();
-    if (device > 0 && device < configuredPorts)
+    printf("device escolhido :%d \n");
+    if (device > 0 && device < configuredPorts){
+            printf("entrei \n");
         kill(actualConfig[device].pid, SIGUSR1);
+    }
     _exit(0);
 }
 
