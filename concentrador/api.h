@@ -31,6 +31,9 @@ float joinFloat(char *bufffer);
 //struct sockaddr_in servAddr, cliaddr;
 //int sockfd;
 
+//process
+int childPid;
+
 //socket
 int sockManager;
 

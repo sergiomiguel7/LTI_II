@@ -42,10 +42,10 @@ void stopSensor(int sig)
     for (int i = 0; i < configuredPorts; i++)
     {
         char aux[128];
-        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, actualConfig[i].pid);
+        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, childPid);
         write(1, aux, strlen(aux));
 
-        if (pid == actualConfig[i].pid)
+        if (pid == childPid)
         {
             //stop to sensor
             char write[SIZE1];
@@ -145,6 +145,8 @@ void handleStop()
     getchar();
     if (device >= 0 && device < configuredPorts)
     {
+        childPid = actualConfig[device].pid;
+        sleep(1);
         kill(actualConfig[device].pid, SIGUSR1);
     }
 }
@@ -176,17 +178,20 @@ void readConfigFile()
         case 0:
             actualConfig[configuredPorts].pa = atoi(token);
             break;
-
+        case 1:
+            strcpy(actualConfig[configuredPorts].GPS, token);    
+            break;
+        case 2:
+            strcpy(actualConfig[configuredPorts].area, token);    
+            break;
         default:
             strcpy(actualConfig[configuredPorts].portSerial, token);
             actualConfig[configuredPorts].opened = 1;
-            strcpy(actualConfig[configuredPorts].GPS, "100;200");
-            strcpy(actualConfig[configuredPorts].area, "Quarto");
             configuredPorts++;
             break;
         }
 
-        nmrArgs > 0 ? nmrArgs = 0 : nmrArgs++;
+        nmrArgs > 2 ? nmrArgs = 0 : nmrArgs++;
         token = strtok(NULL, ";");
     }
     printf("Number of devices found: %d\n", configuredPorts);
