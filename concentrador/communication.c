@@ -65,11 +65,10 @@ void openSerial()
         }
     }
 
-    if (fdData < 0)
-        fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
-    if (fdErrors < 0)
-        fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
+
 
 /**
 * close all files and com ports
