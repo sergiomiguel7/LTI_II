@@ -125,8 +125,8 @@ void sendPacket()
     {
         if (actualConfig[i].opened)
         {
-            char str[6] = "awake";
-            RS232_SendBuf(actualConfig[i].serialNumber, str, 6);
+            char str[1] = "a";
+            RS232_SendBuf(actualConfig[i].serialNumber, str, 1);
         }
     }
 }
