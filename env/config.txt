@@ -1,1 +1,1 @@
-100000;100-200;Quarto;rfcomm0;
+100;100-200;Quarto;rfcomm0;

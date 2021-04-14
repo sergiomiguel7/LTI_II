@@ -19,7 +19,7 @@ void readConfigFile();
 void printConfig();
 void handleBegin(char *str, char *receive);
 void receiveData(char *readBuf, int index);
-void showDevices();
+int showDevices();
 void sendPacket();
 void showMenu();
 void handleOptions();
@@ -47,8 +47,8 @@ void stopSensor(int sig)
             char write[SIZE1];
             int size = buildStopPacket(write, 0);
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
+            sleep(2);
             RS232_CloseComport(actualConfig[i].serialNumber);
-            sleep(1);
             _exit(0);
         }
     }
@@ -122,20 +122,25 @@ void handleOptions()
     } while (option != 0);
 }
 
-void showDevices()
+int showDevices()
 {
+    int total = 0;
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
         {
+            total++;
             printf("Option: %d -> ISS: %d Pid -> %d\n", i, actualConfig[i].iss, actualConfig[i].pid);
         }
     }
+    return total;
 }
 
 void handleStop()
 {
-    showDevices();
+    int total = showDevices();
+    if (!total)
+        return;
     int device = 0, status;
     printf("Sensor: ");
     scanf("%d", &device);
@@ -144,7 +149,8 @@ void handleStop()
     {
         kill(actualConfig[device].pid, SIGUSR1);
         wait(&status);
-        if(WIFEXITED(status) && WEXITSTATUS(status) == 0){
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
+        {
             actualConfig[device].opened = 0;
             actualConfig[device].pid = 0;
             printf("Sensor parado com sucesso\n");
@@ -180,10 +186,10 @@ void readConfigFile()
             actualConfig[configuredPorts].pa = atoi(token);
             break;
         case 1:
-            strcpy(actualConfig[configuredPorts].GPS, token);    
+            strcpy(actualConfig[configuredPorts].GPS, token);
             break;
         case 2:
-            strcpy(actualConfig[configuredPorts].area, token);    
+            strcpy(actualConfig[configuredPorts].area, token);
             break;
         default:
             strcpy(actualConfig[configuredPorts].portSerial, token);
