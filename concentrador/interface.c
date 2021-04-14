@@ -38,11 +38,13 @@ void stopSensor(int sig)
         return;
 
     pid_t pid = getpid();
-    char aux[23];
-    sprintf(aux, "Recebi sinal no pid %d", pid);
-    write(1, aux, 23);
+
     for (int i = 0; i < configuredPorts; i++)
     {
+        char aux[128];
+        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, actualConfig[i].pid);
+        write(1, aux, strlen(aux));
+
         if (pid == actualConfig[i].pid)
         {
             //stop to sensor
@@ -141,9 +143,8 @@ void handleStop()
     printf("Sensor: ");
     scanf("%d", &device);
     getchar();
-    printf("device escolhido :%d \n", device);
-    if (device >= 0 && device < configuredPorts){
-        printf("entrei \n");
+    if (device >= 0 && device < configuredPorts)
+    {
         kill(actualConfig[device].pid, SIGUSR1);
     }
 }
