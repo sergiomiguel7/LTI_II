@@ -24,7 +24,7 @@ void showMenu();
 void handleOptions();
 void handleStop();
 int showDevices();
-int handleChangeStatus(char* buffer);
+int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
@@ -108,13 +108,13 @@ void handleOptions()
             handleBegin(bufWrite, bufRead);
             break;
         case 2:
-            _exit(1);
-            break;
-        case 3:
-            if(handleChangeStatus(bufWrite))
+            if (handleChangeStatus(bufWrite))
                 printf("Estado alterado com sucesso! :) \n");
             else
                 printf("Erro ao alterar estado :C\n");
+            break;
+        case 3:
+            _exit(1);
             break;
         case 4:
             handleStop();
@@ -171,7 +171,8 @@ void handleStop()
  * function to handle the change of led status on one sensor
  * 
  * */
-int handleChangeStatus(char* buffer){
+int handleChangeStatus(char *buffer)
+{
     int total = showDevices();
     if (!total)
         return 0;
@@ -182,12 +183,12 @@ int handleChangeStatus(char* buffer){
     if (device >= 0 && device < configuredPorts)
     {
         int signal = 0;
-        if(!actualConfig[device].led_status)
+        if (!actualConfig[device].led_status)
             signal = 1;
         else
             signal = 0;
 
-        int size = buildLedPacket(buffer,signal);
+        int size = buildLedPacket(buffer, signal);
         RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
         return 1;
     }
