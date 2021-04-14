@@ -13,6 +13,7 @@
 #define ERROR 2
 #define DATA1 3
 #define DATA2 4
+#define LED 5
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -73,6 +74,7 @@ typedef struct config {
     uint8_t iss;//sensor id
     char area[SIZE0]; //where is the sensor
     char GPS[SIZE0]; //gps coordinates from sensor
+    int led_status;
 } config;
 
 config actualConfig[MAX_SENSOR];

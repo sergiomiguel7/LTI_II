@@ -44,6 +44,20 @@ int buildStopPacket(char *str, uint8_t stopCode)
     return 2;
 }
 
+/**
+* @param str - packet to send
+* 
+* @return the number of bytes to send
+* 
+* build the start packet to send to sensor
+*/
+int buildLedPacket(char *str, uint8_t signal)
+{
+    str[0] = (char)LED;
+    str[1] = (char)signal;
+    return 2;
+}
+
 // ----------------- IO OPERATIONS -------------
 
 /*
@@ -54,6 +68,7 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
+        actualConfig[i].led_status = 0;
         actualConfig[i].opened = 1;
         actualConfig[i].serialNumber = RS232_GetPortnr(actualConfig[i].portSerial);
 
@@ -177,6 +192,7 @@ void receiveData(char *readBuf, int index)
                         {
                             char state[12];
                             uint8_t value = readBuf[7];
+                            actualConfig[index].led_status = value;
                             if (value)
                                 strcpy(state, "Ligado");
                             else

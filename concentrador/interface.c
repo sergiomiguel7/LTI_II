@@ -19,13 +19,15 @@ void readConfigFile();
 void printConfig();
 void handleBegin(char *str, char *receive);
 void receiveData(char *readBuf, int index);
-int showDevices();
 void sendPacket();
 void showMenu();
 void handleOptions();
 void handleStop();
+int handleChangeStatus(char* buffer);
+int showDevices();
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
+int buildLedPacket(char *str, uint8_t signal);
 
 /**
  * @param sig - signal identifier
@@ -109,7 +111,10 @@ void handleOptions()
             _exit(1);
             break;
         case 3:
-            _exit(1);
+            if(handleChangeStatus(bufWrite))
+                printf("Estado alterado com sucesso! :) \n");
+            else
+                printf("Erro ao alterar estado :C\n");
             break;
         case 4:
             handleStop();
@@ -130,12 +135,15 @@ int showDevices()
         if (actualConfig[i].opened)
         {
             total++;
-            printf("Option: %d -> ISS: %d Pid -> %d\n", i, actualConfig[i].iss, actualConfig[i].pid);
+            printf("Option: %d -> ISS: %d Led status: %d\n", i, actualConfig[i].iss, actualConfig[i].led_status);
         }
     }
     return total;
 }
 
+/**
+ * function to handle the stop of one sensor
+ * */
 void handleStop()
 {
     int total = showDevices();
@@ -156,6 +164,34 @@ void handleStop()
             printf("Sensor parado com sucesso\n");
         }
     }
+}
+
+/**
+ * 
+ * function to handle the change of led status on one sensor
+ * 
+ * */
+int handleChangeStatus(char* buffer){
+    int total = showDevices();
+    if (!total)
+        return;
+    int device = 0;
+    printf("Sensor: ");
+    scanf("%d", &device);
+    getchar();
+    if (device >= 0 && device < configuredPorts)
+    {
+        int signal = 0;
+        if(!actualConfig[device].led_status)
+            signal = 1;
+        else
+            signal = 0;
+
+        int size = buildLedPacket(buffer,signal);
+        RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
+        return 1;
+    }
+    return 0;
 }
 
 /**
