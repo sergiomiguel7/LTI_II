@@ -139,13 +139,16 @@ void showDevices()
 void handleStop()
 {
     showDevices();
-    int device = 0;
+    int device = 0, status;
     printf("Sensor: ");
     scanf("%d", &device);
     getchar();
     if (device >= 0 && device < configuredPorts)
     {
         kill(actualConfig[device].pid, SIGUSR1);
+        wait(&status);
+        if(WIFEXITED(status) && WEXITSTATUS(status) == 0)
+            printf("Sensor parado com sucesso\n");
     }
 }
 
