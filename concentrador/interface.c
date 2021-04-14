@@ -23,8 +23,8 @@ void sendPacket();
 void showMenu();
 void handleOptions();
 void handleStop();
-int handleChangeStatus(char* buffer);
 int showDevices();
+int handleChangeStatus(char* buffer);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
@@ -174,7 +174,7 @@ void handleStop()
 int handleChangeStatus(char* buffer){
     int total = showDevices();
     if (!total)
-        return;
+        return 0;
     int device = 0;
     printf("Sensor: ");
     scanf("%d", &device);
