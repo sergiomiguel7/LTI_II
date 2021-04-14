@@ -60,7 +60,7 @@ void openSerial()
         int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
         if (status)
         {
-            actualConfig[i].opened = status;
+            actualConfig[i].opened = 0;
             printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
         }
     }
