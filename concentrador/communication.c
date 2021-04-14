@@ -106,6 +106,7 @@ void handleBegin(char *str, char *receive)
 
             if (!pid)
             {
+                actualConfig[i].pid = getpid();
                 int size = buildStartPacket(str, i);
                 RS232_SendBuf(actualConfig[i].serialNumber, str, size);
                 receiveData(receive, i);

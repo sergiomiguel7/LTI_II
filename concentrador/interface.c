@@ -42,10 +42,10 @@ void stopSensor(int sig)
     for (int i = 0; i < configuredPorts; i++)
     {
         char aux[128];
-        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, childPid);
+        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, actualConfig[i].pid);
         write(1, aux, strlen(aux));
 
-        if (pid == childPid)
+        if (pid == actualConfig[i].pid)
         {
             //stop to sensor
             char write[SIZE1];
@@ -145,8 +145,6 @@ void handleStop()
     getchar();
     if (device >= 0 && device < configuredPorts)
     {
-        childPid = actualConfig[device].pid;
-        sleep(1);
         kill(actualConfig[device].pid, SIGUSR1);
     }
 }
