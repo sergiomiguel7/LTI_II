@@ -41,10 +41,6 @@ void stopSensor(int sig)
 
     for (int i = 0; i < configuredPorts; i++)
     {
-        char aux[128];
-        sprintf(aux, "Recebi sinal no pid %d e estou a comparar com %d", pid, actualConfig[i].pid);
-        write(1, aux, strlen(aux));
-
         if (pid == actualConfig[i].pid)
         {
             //stop to sensor
@@ -52,6 +48,7 @@ void stopSensor(int sig)
             int size = buildStopPacket(write, 0);
             RS232_SendBuf(actualConfig[i].serialNumber, write, size);
             RS232_CloseComport(actualConfig[i].serialNumber);
+            sleep(1);
             _exit(0);
         }
     }
@@ -147,8 +144,11 @@ void handleStop()
     {
         kill(actualConfig[device].pid, SIGUSR1);
         wait(&status);
-        if(WIFEXITED(status) && WEXITSTATUS(status) == 0)
+        if(WIFEXITED(status) && WEXITSTATUS(status) == 0){
+            actualConfig[device].opened = 0;
+            actualConfig[device].pid = 0;
             printf("Sensor parado com sucesso\n");
+        }
     }
 }
 

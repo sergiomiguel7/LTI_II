@@ -54,11 +54,9 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
+        actualConfig[i].opened = 1;
         actualConfig[i].serialNumber = RS232_GetPortnr(actualConfig[i].portSerial);
-        if (actualConfig[i].serialNumber == -1)
-        {
-            actualConfig[i].serialNumber = 6;
-        }
+
         int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
         if (status)
         {
@@ -67,8 +65,10 @@ void openSerial()
         }
     }
 
-    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
-    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    if(fdData < 0)
+        fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    if(fdErrors < 0)
+        fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
 /**
