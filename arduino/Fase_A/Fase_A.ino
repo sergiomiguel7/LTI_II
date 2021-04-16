@@ -26,6 +26,10 @@ bool ledC = 0;
 
 bool var = false;
 
+unsigned long previousTime = 0;
+
+bool needBreak = false;
+
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
@@ -49,12 +53,9 @@ void loop() {
     //ler trama
     SerialBT.readBytes(aux, STARTPACKETSIZE);
     // verificar tipo de trama
-    Serial.println("Recebi pacote antes de start");
-
-    if (aux[0] == START) {           //trama de START
-      Serial.println("Recebi pacote Start");
+    if (aux[0] == START) {
+      reseting();
       startPacket(aux, &startTS, &pa);
-      Serial.println((String)startTS + " -||- " + pa );
       data1Packet(dataPacket, currentTimestamp());
 
 
@@ -78,50 +79,45 @@ void loop() {
         //obter timestamp trama e actual
         initialTS = millis();
 
-        pos = 7;
         int n;
-        while (1) {
-          sensorSystem();
+        while (needBreak == false) {
+          unsigned long currentTime = millis();
 
-          if ((n = SerialBT.available())) {
-
-            if (n == 2) {
-              Serial.println("Recebi n = 2");
-
-              SerialBT.readBytes(aux, STOPPACKETSIZE);
-              if (aux[0] == STOP) {
-                int rsn;
-                stopPacket(aux, &rsn);         //ver parametros possiveis para a razao
-                data1Packet(dataPacket, currentTimestamp());
-                SerialBT.write(dataPacket, pos);
-                pos = 7;
-                Serial.println("Recebi pacote de stop");
-                break;
-              }
-
-              if (aux[0] == LED) {
-                if (aux[1] == 0 || aux[1] == 1)
-                  ledC = aux[1];
-                else {
-                  errorPacket(aux, startTS, LEDSTATERROR);
-                  SerialBT.write(aux, ERRORPACKETSIZE);
-                }
-              }
-
-            } else
-              Serial.println((String)SerialBT.readBytes(aux, n));
-
-          }else{
-            break;
+          if (currentTime - previousTime >= pa) {
+            sensorSystem();
+            previousTime = currentTime;
           }
 
-          //O processo repete-se a cada pa ms
-          delay(pa);
+
+
+          while (SerialBT.available() > 0) {
+            uint8_t n1 = SerialBT.read();
+
+            if (n1 == STOP) {
+              int rsn;
+              rsn = SerialBT.read();
+              data1Packet(dataPacket, currentTimestamp());
+              SerialBT.write(dataPacket, pos);
+              needBreak = true;
+            }
+
+            if (n1 == LED) {
+              uint8_t n2 = SerialBT.read();
+
+              if (n2 == 0 || n2 == 1)
+                ledC = n2;
+              else {
+                errorPacket(aux, startTS, LEDSTATERROR);
+                SerialBT.write(aux, ERRORPACKETSIZE);
+              }
+            }
+          }
         }
       }
     }
   }
 }
+
 
 
 void sensorSystem() {
@@ -145,7 +141,6 @@ void sensorSystem() {
     if (var == false) {
       data2Packet(aux, currentTimestamp(), led);
       SerialBT.write(aux, DATA2PACKETSIZE);
-      Serial.println((String) "LED " + led);
     }
     var = true;
   }
@@ -158,7 +153,6 @@ void sensorSystem() {
   if (addInfo(dataPacket, voltage_value, pos)) {
     pos = pos + 4;
     size_t num = SerialBT.write(dataPacket, pos);
-    Serial.println((String) "BT -> " + num);
     data1Packet(dataPacket, currentTimestamp());
     pos = 7;
   } else {
@@ -169,15 +163,22 @@ void sensorSystem() {
 
 
 uint32_t currentTimestamp() {
-  //calcular timestamp desde o inicio até ao enviado do concentrador
   return (millis() - initialTS) + startTS;
 }
 
 void conditions(bool led) {
   if ( led || ledC ) {
     digitalWrite(ledPin, HIGH);
+    Serial.println((String) "LED 1 -> led:" + led + " ledC:" + ledC);
   }
   else {
     digitalWrite(ledPin, LOW);
+    Serial.println((String) "LED 0 -> led:" + led + " ledC:" + ledC);
   }
+}
+
+void reseting() {
+  previousTime = 0;
+  needBreak = false;
+  pos = 7;
 }

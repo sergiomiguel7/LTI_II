@@ -21,5 +21,3 @@ void data2Packet(uint8_t packet[] , uint32_t tsp, int state);
 bool pirAnalysis(int state);
 
 void errorPacket(uint8_t packet[] , uint32_t tsp, int err);
-
-void stopPacket(uint8_t packet[], int *rsn);

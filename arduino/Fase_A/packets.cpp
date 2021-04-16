@@ -102,10 +102,6 @@ void errorPacket(uint8_t packet[] , uint32_t tsp, int err) {
 }
 
 
-void stopPacket(uint8_t packet[], int *rsn) {
-  *rsn = packet[1];
-}
-
 
 
 /*
