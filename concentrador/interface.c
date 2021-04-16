@@ -23,6 +23,7 @@ void sendPacket();
 void showMenu();
 void handleOptions();
 void handleStop();
+void enableRealTime();
 int showDevices();
 int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
@@ -94,7 +95,6 @@ void handleOptions()
     do
     {
         showMenu();
-        printf("\nOpção: ");
         scanf("%d", &option);
         getchar();
 
@@ -114,9 +114,22 @@ void handleOptions()
                 printf("Erro ao alterar estado :C\n");
             break;
         case 3:
-            _exit(1);
+            //atualizar coordenadas e posição
             break;
         case 4:
+            //visualização de dados
+            printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
+            scanf("%d", &option);
+            switch (option)
+            {
+            case 1:
+                enableRealTime();
+                break;
+            case 2:
+                break;
+            }
+            break;
+        case 5:
             handleStop();
             break;
         default:
@@ -127,6 +140,20 @@ void handleOptions()
     } while (option != 0);
 }
 
+
+
+void enableRealTime(){
+    for(int i = 0; i < configuredPorts; i++){
+        if(actualConfig[i].opened){
+            kill(actualConfig[i].pid, SIGUSR2);
+        }
+    }
+}
+
+
+/**
+ * print on the screen all the opened sensors
+ * */
 int showDevices()
 {
     int total = 0;

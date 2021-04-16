@@ -169,7 +169,7 @@ void receiveData(char *readBuf, int index)
                     uint32_t timestamp = join32(readBuf + 2);
 
                     uint8_t type = readBuf[6];
-
+                    //ERROR PACKET
                     if (readBuf[0] == ERROR)
                     {
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
@@ -179,15 +179,20 @@ void receiveData(char *readBuf, int index)
                     }
                     else
                     {
+                        //DATA 1 PACKET (V)
                         if (readBuf[0] == DATA1)
                             for (int j = 7; j < readed; j = j + 4)
                             {
+                                if(j!=7){
+                                    timestamp += timestamp + actualConfig[index].pa;
+                                }
                                 float value = joinFloat(readBuf + j);
                                 sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                         actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, value);
                                 int n = write(fdData, entry, strlen(entry));
                                 //printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                             }
+                        //DATA 2 PACKET (S)
                         else if (readBuf[0] == DATA2)
                         {
                             char state[12];
