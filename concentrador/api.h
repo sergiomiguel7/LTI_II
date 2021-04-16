@@ -13,6 +13,7 @@
 #define ERROR 2
 #define DATA1 3
 #define DATA2 4
+#define LED 5
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -31,6 +32,7 @@ float joinFloat(char *bufffer);
 //struct sockaddr_in servAddr, cliaddr;
 //int sockfd;
 
+
 //socket
 int sockManager;
 
@@ -40,8 +42,8 @@ int fdLogs, fdErrors, fdData;
 //numero sensores ligados
 int configuredPorts;
 
-//child process
-int parentPid, childPid, status;
+//real time
+int showRealTime;
 
 //estruturas para conversao de bytes
 typedef union
@@ -68,9 +70,11 @@ typedef struct config {
     char portSerial[SIZE1]; //serial port used from arduino when write blueetooth data
     int serialNumber; //index from serial 
     int opened; //it's opened ?
+    pid_t pid; //receiving data on process pid
     uint8_t iss;//sensor id
     char area[SIZE0]; //where is the sensor
     char GPS[SIZE0]; //gps coordinates from sensor
+    int led_status;
 } config;
 
 config actualConfig[MAX_SENSOR];
