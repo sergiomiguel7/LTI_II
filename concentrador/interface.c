@@ -188,6 +188,8 @@ int handleChangeStatus(char *buffer)
         else
             signal = 0;
 
+        actualConfig[device].led_status = signal;
+        
         int size = buildLedPacket(buffer, signal);
         RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
         return 1;
