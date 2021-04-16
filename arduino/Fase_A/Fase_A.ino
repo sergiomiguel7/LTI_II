@@ -22,7 +22,7 @@ const int pirPin = 27;
 
 //Estado atual do led
 //0 -> desligado , 1 -> ligado
-bool led = 0;
+bool ledC = 0;
 
 bool var = false;
 
@@ -49,6 +49,7 @@ void loop() {
     //ler trama
     SerialBT.readBytes(aux, STARTPACKETSIZE);
     // verificar tipo de trama
+    Serial.println("Recebi pacote antes de start");
 
     if (aux[0] == START) {           //trama de START
       Serial.println("Recebi pacote Start");
@@ -83,22 +84,37 @@ void loop() {
           sensorSystem();
 
           if ((n = SerialBT.available())) {
-            if (n < 5) {
+
+            if (n == 2) {
+              Serial.println("Recebi n = 2");
+
               SerialBT.readBytes(aux, STOPPACKETSIZE);
-              if (aux[0] == STOP)
-              {
+              if (aux[0] == STOP) {
                 int rsn;
                 stopPacket(aux, &rsn);         //ver parametros possiveis para a razao
                 data1Packet(dataPacket, currentTimestamp());
                 SerialBT.write(dataPacket, pos);
                 pos = 7;
+                Serial.println("Recebi pacote de stop");
                 break;
               }
-            }
-            else
-              SerialBT.readBytes(aux, n);
+
+              if (aux[0] == LED) {
+                if (aux[1] == 0 || aux[1] == 1)
+                  ledC = aux[1];
+                else {
+                  errorPacket(aux, startTS, LEDSTATERROR);
+                  SerialBT.write(aux, ERRORPACKETSIZE);
+                }
+              }
+
+            } else
+              Serial.println((String)SerialBT.readBytes(aux, n));
+
+          }else{
+            break;
           }
-          SerialBT.flush();
+
           //O processo repete-se a cada pa ms
           delay(pa);
         }
@@ -108,13 +124,8 @@ void loop() {
 }
 
 
-/*
-  codigo quando se recebe trama start
-  startTS = join32((uint8_t*)&packet[1]);
-  initialTS = millis();
-*/
-
 void sensorSystem() {
+  bool led;
   // put your main code here, to run repeatedly:
   int ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
@@ -125,13 +136,11 @@ void sensorSystem() {
 
   if (pirStat == HIGH) {
     if (voltage_value <= 0.75) {
-      digitalWrite(ledPin, HIGH);
       led = 1;
     } else {
-      digitalWrite(ledPin, LOW);
       led = 0;
     }
-
+    conditions(led);
 
     if (var == false) {
       data2Packet(aux, currentTimestamp(), led);
@@ -162,4 +171,13 @@ void sensorSystem() {
 uint32_t currentTimestamp() {
   //calcular timestamp desde o inicio até ao enviado do concentrador
   return (millis() - initialTS) + startTS;
+}
+
+void conditions(bool led) {
+  if ( led || ledC ) {
+    digitalWrite(ledPin, HIGH);
+  }
+  else {
+    digitalWrite(ledPin, LOW);
+  }
 }

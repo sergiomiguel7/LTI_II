@@ -7,6 +7,7 @@
 #define ERR 2
 #define DATA1 3
 #define DATA2 4
+#define LED 5
 
 #include "Arduino.h"
 #include "stdint.h"
