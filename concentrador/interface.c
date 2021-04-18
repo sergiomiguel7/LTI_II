@@ -299,37 +299,19 @@ void handlePositionChange()
     {
         int count = 0;
         while ((fgets(configLine, SIZE3, fPrin)) != NULL)
-        {
-            count++;
-            
+        {            
+           
             if (count == device)
             {
-                int counter = 0;
-                for (char *p = strtok(configLine, ";"); p != NULL; p = strtok(NULL, ";"))
-                {
-                    switch (counter)
-                    {
-                    case 0:
-                        strcat(newLine,p); 
-                        break;
-                    case 1:
-                        strcat(newLine,newGPS); 
-                        break;
-                    case 2:
-                        strcat(newLine,newArea); 
-                        break;
-                    case 3:
-                        strcat(newLine,p); 
-                        break;
-                    }
-                    strcat(newLine,";"); 
-                    counter++;
-                }
+                sprintf(newLine,"%d;%s;%s;%s;",
+                    actualConfig[device].pa,newGPS,newArea,actualConfig[device].portSerial);
+                
                 fputs(newLine, fTemp);
             }
             else
                 fputs(configLine, fTemp);
 
+            count++;
            
         }
     }
