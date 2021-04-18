@@ -24,6 +24,7 @@ void showMenu();
 void handleOptions();
 void handleStop();
 void enableRealTime();
+void handlePositionChange();
 int showDevices();
 int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
@@ -296,7 +297,7 @@ void handlePositionChange()
     char newLine[SIZE3];
     if (device >= 0 && device < configuredPorts)
     {
-        count = 0;
+        int count = 0;
         while ((fgets(configLine, SIZE3, fPrin)) != NULL)
         {
             count++;
