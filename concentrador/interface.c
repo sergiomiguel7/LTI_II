@@ -114,7 +114,7 @@ void handleOptions()
                 printf("Erro ao alterar estado :C\n");
             break;
         case 3:
-            //atualizar coordenadas e posição
+            handlePositionChange();
             break;
         case 4:
             //visualização de dados
@@ -140,16 +140,16 @@ void handleOptions()
     } while (option != 0);
 }
 
-
-
-void enableRealTime(){
-    for(int i = 0; i < configuredPorts; i++){
-        if(actualConfig[i].opened){
+void enableRealTime()
+{
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
             kill(actualConfig[i].pid, SIGUSR2);
         }
     }
 }
-
 
 /**
  * print on the screen all the opened sensors
@@ -216,7 +216,7 @@ int handleChangeStatus(char *buffer)
             signal = 0;
 
         actualConfig[device].led_status = signal;
-        
+
         int size = buildLedPacket(buffer, signal);
         RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
         return 1;
@@ -268,4 +268,75 @@ void readConfigFile()
         token = strtok(NULL, ";");
     }
     printf("Number of devices found: %d\n", configuredPorts);
+}
+
+void handlePositionChange()
+{
+    char newGPS[SIZE0]; 
+    char newArea[SIZE0];
+    int total = showDevices();
+    if (!total)
+        return;
+    int device = 0, status;
+    printf("Sensor: ");
+    scanf("%d", &device);
+    getchar();
+    printf("Novas coordenadas GPS!");
+    scanf("%s",newGPS);
+    printf("Nova Area!");
+    scanf("%s",newArea);
+
+    FILE *fPrin;
+    FILE *fTemp;
+
+    //int fd = open(CONFIG_FILE, O_RDWR);
+    fPrin  = fopen(CONFIG_FILE, "r");
+    fTemp = fopen("replace.tmp", "w"); 
+    char configLine[SIZE3];
+    char newLine[SIZE3];
+    if (device >= 0 && device < configuredPorts)
+    {
+        count = 0;
+        while ((fgets(configLine, SIZE3, fPrin)) != NULL)
+        {
+            count++;
+            
+            if (count == device)
+            {
+                int counter = 0;
+                for (char *p = strtok(configLine, ";"); p != NULL; p = strtok(NULL, ";"))
+                {
+                    switch (counter)
+                    {
+                    case 0:
+                        strcat(newLine,p); 
+                        break;
+                    case 1:
+                        strcat(newLine,newGPS); 
+                        break;
+                    case 2:
+                        strcat(newLine,newArea); 
+                        break;
+                    case 3:
+                        strcat(newLine,p); 
+                        break;
+                    }
+                    strcat(newLine,";"); 
+                    counter++;
+                }
+                fputs(newLine, fTemp);
+            }
+            else
+                fputs(configLine, fTemp);
+
+           
+        }
+    }
+
+    fclose(fPrin);
+    fclose(fTemp);
+
+    remove(CONFIG_FILE);
+
+    rename("replace.tmp", CONFIG_FILE);
 }
