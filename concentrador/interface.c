@@ -13,6 +13,7 @@
 
 //define functions
 void handler(int sign);
+void openFiles();
 void closeFiles();
 void openSerial();
 void readConfigFile();
@@ -24,6 +25,7 @@ void showMenu();
 void handleOptions();
 void handleStop();
 void enableRealTime();
+void showData();
 int showDevices();
 int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
@@ -33,7 +35,7 @@ int buildLedPacket(char *str, uint8_t signal);
 /**
  * @param sig - signal identifier
  * 
- * handles the sigint signal and closes everything 
+ * handles the sigint signal and close one sensor
  **/
 void stopSensor(int sig)
 {
@@ -57,13 +59,58 @@ void stopSensor(int sig)
     }
 }
 
+/**
+ * 
+ * @param sig - signal identifier
+ * 
+ * handles the real time data
+ * */
+void changeRealTime(int sig)
+{
+    if (sig != SIGUSR2)
+        return;
+
+    pid_t pid = getpid();
+
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (pid == actualConfig[i].pid)
+        {
+            showRealTime = !showRealTime;
+        }
+    }
+}
+
+/**
+ * 
+ * @param sig - signal identifier
+ * 
+ * stop the real time data
+ * */
+void stopRealTime(int sig)
+{
+    if (sig != SIGINT)
+        return;
+
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
+            kill(actualConfig[i].pid, SIGUSR2);
+        }
+    }
+}
+
 int main()
 {
+    signal(SIGINT, stopRealTime);
     signal(SIGUSR1, stopSensor);
+    signal(SIGUSR2, changeRealTime);
     configuredPorts = 0;
     showRealTime = 0;
 
     readConfigFile();
+    openFiles();
     handleOptions();
 }
 
@@ -89,7 +136,7 @@ void showMenu()
 void handleOptions()
 {
     char bufWrite[SIZE3], bufRead[SIZE_DATA];
-    int option;
+    int option, option2;
     pid_t pid;
 
     do
@@ -118,16 +165,13 @@ void handleOptions()
             break;
         case 4:
             //visualização de dados
+            option2 = 3;
             printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
-            scanf("%d", &option);
-            switch (option)
-            {
-            case 1:
+            scanf("%d", &option2);
+            if (option2 == 1)
                 enableRealTime();
-                break;
-            case 2:
-                break;
-            }
+            else if (option2 == 2)
+                showData();
             break;
         case 5:
             handleStop();
@@ -140,16 +184,77 @@ void handleOptions()
     } while (option != 0);
 }
 
+/**
+ * send a signal to all child to open real data income
+ * 
+ * */
+void enableRealTime()
+{
+    int total = showDevices();
+    if (!total)
+        return;
+    int device = 0, status;
+    printf("Sensor: ");
+    scanf("%d", &device);
+    getchar();
 
-
-void enableRealTime(){
-    for(int i = 0; i < configuredPorts; i++){
-        if(actualConfig[i].opened){
+    for (int i = 0; i < configuredPorts; i++)
+    {
+        if (actualConfig[i].opened)
+        {
             kill(actualConfig[i].pid, SIGUSR2);
         }
     }
 }
 
+/**
+ * show data between two dates 
+ * 
+ **/
+void showData()
+{
+
+    char configLine[SIZE3], date1[SIZE1], hour1[SIZE1], date2[SIZE1], hour2[SIZE1];
+    int sizeRead, counter = 0;
+    printf("\nInsira a primeira data formato (DD/MM/AAAA): ");
+    scanf("%s", date1);
+    printf("\nInsira a primeira hora (HH:MM): ");
+    scanf("%s", hour1);
+    printf("\nInsira a segunda data formato (DD/MM/AAAA): ");
+    scanf("%s", date2);
+    printf("\nInsira a segunda hora formato (HH:MM): ");
+    scanf("%s", hour2);
+
+    long time1 = transform_data(date1, hour1);
+    long time2 = transform_data(date2, hour2);
+
+    sizeRead = read(fdData, configLine, sizeof(configLine));
+    char *token = strtok(configLine, "\n");
+
+    while (token != NULL)
+    {
+        counter = 0;
+        char *line = strtok(token, ";");
+        while (line != NULL)
+        {
+            if (counter == 3)
+            { //compare timestamp
+                long timeLine = (long)atoi(line);
+                printf("line: %ld , date1: %ld , date2: %ld", timeLine, time1, time2);
+                if (timeLine > time1 && timeLine < time2)
+                {
+                    char aux[SIZE_DATA];
+                    sprintf(aux, "%s\n", token);
+                    write(1, aux, strlen(aux));
+                }
+                break;
+            }
+            counter++;
+            token = strtok(NULL, ";");
+        }
+        token = strtok(NULL, "\n");
+    }
+}
 
 /**
  * print on the screen all the opened sensors
@@ -216,7 +321,7 @@ int handleChangeStatus(char *buffer)
             signal = 0;
 
         actualConfig[device].led_status = signal;
-        
+
         int size = buildLedPacket(buffer, signal);
         RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
         return 1;

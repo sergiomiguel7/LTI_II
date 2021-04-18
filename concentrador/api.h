@@ -27,6 +27,7 @@ uint16_t join16(char *buffer);
 uint32_t join32(char *buffer);
 void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
+long transform_data(char *date, char *hour);
 
 //vars para socket
 //struct sockaddr_in servAddr, cliaddr;

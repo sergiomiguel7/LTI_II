@@ -60,6 +60,11 @@ int buildLedPacket(char *str, uint8_t signal)
 
 // ----------------- IO OPERATIONS -------------
 
+void openFiles(){
+    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+}
+
 /*
 * function to open the config file declarated portSerial to receive
 * data from arduino
@@ -79,11 +84,7 @@ void openSerial()
             printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
         }
     }
-
-    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
-    fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
-
 
 /**
 * close all files and com ports
@@ -175,7 +176,8 @@ void receiveData(char *readBuf, int index)
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
                                 actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, type);
                         write(fdErrors, entry, sizeof(entry));
-                        printf("ERROR =>  ISS: %u, TIMESTAMP: %u, ERRO: %u\n", actualConfig[index].iss, timestamp, type);
+                        if (showRealTime)
+                            write(1, entry, strlen(entry));
                     }
                     else
                     {
@@ -183,13 +185,16 @@ void receiveData(char *readBuf, int index)
                         if (readBuf[0] == DATA1)
                             for (int j = 7; j < readed; j = j + 4)
                             {
-                                if(j!=7){
+                                if (j != 7)
+                                {
                                     timestamp += timestamp + actualConfig[index].pa;
                                 }
                                 float value = joinFloat(readBuf + j);
                                 sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
                                         actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, value);
                                 int n = write(fdData, entry, strlen(entry));
+                                if (showRealTime)
+                                    write(1, entry, strlen(entry));
                                 //printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
                             }
                         //DATA 2 PACKET (S)
@@ -206,7 +211,8 @@ void receiveData(char *readBuf, int index)
                             sprintf(entry, "%u;%s;%s;%u;%c;%s\n",
                                     actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
                             int n = write(fdData, entry, strlen(entry));
-                            //printf("Recebi valor %d e escrevi no ficheiro %d\n", value, n);
+                            if (showRealTime)
+                                write(1, entry, strlen(entry));
                         }
                     }
                 }
