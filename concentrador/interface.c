@@ -195,7 +195,7 @@ void enableRealTime()
     if (!total)
         return;
     int device = 0, status;
-    printf("Sensor: ");
+    printf("\nSensor: ");
     scanf("%d", &device);
     getchar();
 
@@ -268,7 +268,7 @@ int showDevices()
         if (actualConfig[i].opened)
         {
             total++;
-            printf("\n0 -> ISS: %d Led status: %d", i, actualConfig[i].iss, actualConfig[i].led_status);
+            printf("\n%d -> ISS: %d Led status: %d", i, actualConfig[i].iss, actualConfig[i].led_status);
         }
     }
     return total;
@@ -283,7 +283,7 @@ void handleStop()
     if (!total)
         return;
     int device = 0, status;
-    printf("Sensor: ");
+    printf("\nSensor: ");
     scanf("%d", &device);
     getchar();
     if (device >= 0 && device < configuredPorts)
@@ -310,7 +310,7 @@ int handleChangeStatus(char *buffer)
     if (!total)
         return 0;
     int device = 0;
-    printf("Sensor: ");
+    printf("\nSensor: ");
     scanf("%d", &device);
     getchar();
     if (device >= 0 && device < configuredPorts)
@@ -384,7 +384,7 @@ void handlePositionChange()
     if (!total)
         return;
     int device = 0, status;
-    printf("Sensor: ");
+    printf("\nSensor: ");
     scanf("%d", &device);
     getchar();
     printf("Novas coordenadas GPS: ");
@@ -405,7 +405,7 @@ void handlePositionChange()
         int count = 0;
         while ((fgets(configLine, SIZE3, fPrin)) != NULL)
         {            
-           
+            printf("Entrei\n");
             if (count == device)
             {
                 sprintf(newLine,"%d;%s;%s;%s;",
