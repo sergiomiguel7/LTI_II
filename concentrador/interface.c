@@ -71,6 +71,8 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2)
         return;
 
+    showRealTime = 1;
+
     pid_t pid = getpid();
 
     for (int i = 0; i < configuredPorts; i++)
@@ -142,44 +144,47 @@ void handleOptions()
 
     do
     {
-        showMenu();
-        scanf("%d", &option);
-        getchar();
-
-        switch (option)
+        if (!showRealTime)
         {
-        case 0:
-            closeFiles();
-            _exit(0);
-        case 1:
-            openSerial();
-            handleBegin(bufWrite, bufRead);
-            break;
-        case 2:
-            if (handleChangeStatus(bufWrite))
-                printf("Estado alterado com sucesso! :) \n");
-            else
-                printf("Erro ao alterar estado :C\n");
-            break;
-        case 3:
-            handlePositionChange();
-            break;
-        case 4:
-            //visualização de dados
-            option2 = 3;
-            printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
-            scanf("%d", &option2);
-            if (option2 == 1)
-                enableRealTime();
-            else if (option2 == 2)
-                showData();
-            break;
-        case 5:
-            handleStop();
-            break;
-        default:
-            printf("Opção inválida :c");
-            break;
+            showMenu();
+            scanf("%d", &option);
+            getchar();
+
+            switch (option)
+            {
+            case 0:
+                closeFiles();
+                _exit(0);
+            case 1:
+                openSerial();
+                handleBegin(bufWrite, bufRead);
+                break;
+            case 2:
+                if (handleChangeStatus(bufWrite))
+                    printf("Estado alterado com sucesso! :) \n");
+                else
+                    printf("Erro ao alterar estado :C\n");
+                break;
+            case 3:
+                handlePositionChange();
+                break;
+            case 4:
+                //visualização de dados
+                option2 = 3;
+                printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
+                scanf("%d", &option2);
+                if (option2 == 1)
+                    enableRealTime();
+                else if (option2 == 2)
+                    showData();
+                break;
+            case 5:
+                handleStop();
+                break;
+            default:
+                printf("Opção inválida :c");
+                break;
+            }
         }
 
     } while (option != 0);
@@ -191,14 +196,7 @@ void handleOptions()
  * */
 void enableRealTime()
 {
-    int total = showDevices();
-    if (!total)
-        return;
-    int device = 0, status;
-    printf("\nSensor: ");
-    scanf("%d", &device);
-    getchar();
-
+    showRealTime = 0;
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -378,7 +376,7 @@ void readConfigFile()
 
 void handlePositionChange()
 {
-    char newGPS[SIZE0]; 
+    char newGPS[SIZE0];
     char newArea[SIZE0];
     int total = showDevices();
     if (!total)
@@ -388,36 +386,35 @@ void handlePositionChange()
     scanf("%d", &device);
     getchar();
     printf("Novas coordenadas GPS: ");
-    scanf("%s",newGPS);
+    scanf("%s", newGPS);
     printf("Nova Area: ");
-    scanf("%s",newArea);
+    scanf("%s", newArea);
 
     FILE *fPrin;
     FILE *fTemp;
 
     //int fd = open(CONFIG_FILE, O_RDWR);
-    fPrin  = fopen(CONFIG_FILE, "r");
-    fTemp = fopen("replace.tmp", "w"); 
+    fPrin = fopen(CONFIG_FILE, "r");
+    fTemp = fopen("replace.tmp", "w");
     char configLine[SIZE3];
     char newLine[SIZE3];
     if (device >= 0 && device < configuredPorts)
     {
         int count = 0;
         while ((fgets(configLine, SIZE3, fPrin)) != NULL)
-        {            
+        {
             printf("Entrei\n");
             if (count == device)
             {
-                sprintf(newLine,"%d;%s;%s;%s;",
-                    actualConfig[device].pa,newGPS,newArea,actualConfig[device].portSerial);
-                
+                sprintf(newLine, "%d;%s;%s;%s;",
+                        actualConfig[device].pa, newGPS, newArea, actualConfig[device].portSerial);
+
                 fputs(newLine, fTemp);
             }
             else
                 fputs(configLine, fTemp);
 
             count++;
-           
         }
     }
 
