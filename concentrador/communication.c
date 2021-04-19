@@ -190,7 +190,7 @@ void receiveData(char *readBuf, int index)
                                     timestamp += actualConfig[index].pa;
                                 }
                                 float value = joinFloat(readBuf + j);
-                                sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
+                                sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
                                         actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, value);
                                 int n = write(fdData, entry, strlen(entry));
                                 if (showRealTime)
@@ -208,7 +208,7 @@ void receiveData(char *readBuf, int index)
                             else
                                 strcpy(state, "Desligado");
 
-                            sprintf(entry, "%u;%s;%s;%u;%c;%s\n",
+                            sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
                                     actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
                             int n = write(fdData, entry, strlen(entry));
                             if (showRealTime)

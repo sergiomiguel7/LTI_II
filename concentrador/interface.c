@@ -239,7 +239,6 @@ void showData()
             if (counter == 3)
             { //compare timestamp
                 long timeLine = (long)atoi(line);
-                printf("line: %ld , date1: %ld , date2: %ld", timeLine, time1, time2);
                 if (timeLine > time1 && timeLine < time2)
                 {
                     char aux[SIZE_DATA];
@@ -249,7 +248,7 @@ void showData()
                 break;
             }
             counter++;
-            token = strtok(NULL, ";");
+            line = strtok(NULL, ";");
         }
         token = strtok(NULL, "\n");
     }
