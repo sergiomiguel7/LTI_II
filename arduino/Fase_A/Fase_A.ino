@@ -21,8 +21,8 @@ const int ledPin = 25;
 const int pirPin = 27;
 
 //Estado atual do led
-//0 -> desligado , 1 -> ligado
-bool ledC = 0;
+//0 -> desligado , 1 -> ligado, 2 -> dependente
+int ledC = 2;
 
 bool var = false;
 
@@ -104,16 +104,21 @@ void loop() {
             if (n1 == LED) {
               uint8_t n2 = SerialBT.read();
 
-              if (n2 == 0 || n2 == 1) {
-                ledC = n2;
-                Serial.println((String) "valor de n2" + n2);
-
-                if ( ledC == 1)
+              ledC = n2;
+              Serial.println((String)"N2 ->" + n2);
+              switch (ledC) {
+                case 0:
+                  digitalWrite(ledPin, LOW);
+                  break;
+                case 1:
                   digitalWrite(ledPin, HIGH);
-
-              } else {
-                errorPacket(aux, startTS, LEDSTATERROR);
-                SerialBT.write(aux, ERRORPACKETSIZE);
+                  break;
+                case 2:
+                  break;
+                default:
+                  errorPacket(aux, startTS, LEDSTATERROR);
+                  SerialBT.write(aux, ERRORPACKETSIZE);
+                  break;
               }
             }
           }
@@ -126,7 +131,7 @@ void loop() {
 
 
 void sensorSystem() {
-  bool led;
+  int led;
   // put your main code here, to run repeatedly:
   int ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
@@ -136,12 +141,12 @@ void sensorSystem() {
 
 
   if (pirStat == HIGH) {
-    if (voltage_value <= 0.75) {
+    if (voltage_value <= 2.0) {
       led = 1;
     } else {
       led = 0;
     }
-    conditions(led);
+    led = conditions(led);
 
     if (var == false) {
       data2Packet(aux, currentTimestamp(), led);
@@ -150,7 +155,7 @@ void sensorSystem() {
     var = true;
   }
   else {
-    if (ledC != 1)
+    if (ledC == 2)
       digitalWrite(ledPin, LOW);
     var = false;
   }
@@ -172,17 +177,19 @@ uint32_t currentTimestamp() {
   return (millis() - initialTS) + startTS;
 }
 
-void conditions(bool led) {
-  if (ledC != 1) {
+int conditions(bool led) {
+  if (ledC == 2) {
     if ( led ) {
       digitalWrite(ledPin, HIGH);
-      Serial.println((String) "LED 1 -> led:" + led + " ledC:" + ledC);
+      return 1;
     }
     else {
       digitalWrite(ledPin, LOW);
-      Serial.println((String) "LED 0 -> led:" + led + " ledC:" + ledC);
+      return 0;
     }
   }
+  else
+    return ledC;
 }
 
 void reseting() {

@@ -7,7 +7,7 @@
 #define TSERROR 0
 #define PAERROR 1
 #define LEDSTATERROR 2
-#define ISS 0
+#define ISS 1
 
 
 bool addInfo(uint8_t packet[], float info, int pos);
