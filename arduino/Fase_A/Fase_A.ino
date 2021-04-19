@@ -7,7 +7,7 @@ uint32_t initialTS = 0;
 uint32_t startTS = 0;
 uint32_t pa = 0;
 uint8_t aux [24];
-uint8_t dataPacket [128];
+uint8_t dataPacket[128];
 int pos = 0;
 
 
@@ -104,9 +104,14 @@ void loop() {
             if (n1 == LED) {
               uint8_t n2 = SerialBT.read();
 
-              if (n2 == 0 || n2 == 1)
+              if (n2 == 0 || n2 == 1) {
                 ledC = n2;
-              else {
+                Serial.println((String) "valor de n2" + n2);
+
+                if ( ledC == 1)
+                  digitalWrite(ledPin, HIGH);
+
+              } else {
                 errorPacket(aux, startTS, LEDSTATERROR);
                 SerialBT.write(aux, ERRORPACKETSIZE);
               }
@@ -145,7 +150,8 @@ void sensorSystem() {
     var = true;
   }
   else {
-    digitalWrite(ledPin, LOW);
+    if (ledC != 1)
+      digitalWrite(ledPin, LOW);
     var = false;
   }
 
@@ -167,13 +173,15 @@ uint32_t currentTimestamp() {
 }
 
 void conditions(bool led) {
-  if ( led || ledC ) {
-    digitalWrite(ledPin, HIGH);
-    Serial.println((String) "LED 1 -> led:" + led + " ledC:" + ledC);
-  }
-  else {
-    digitalWrite(ledPin, LOW);
-    Serial.println((String) "LED 0 -> led:" + led + " ledC:" + ledC);
+  if (ledC != 1) {
+    if ( led ) {
+      digitalWrite(ledPin, HIGH);
+      Serial.println((String) "LED 1 -> led:" + led + " ledC:" + ledC);
+    }
+    else {
+      digitalWrite(ledPin, LOW);
+      Serial.println((String) "LED 0 -> led:" + led + " ledC:" + ledC);
+    }
   }
 }
 

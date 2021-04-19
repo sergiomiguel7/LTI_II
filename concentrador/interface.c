@@ -26,6 +26,7 @@ void handleOptions();
 void handleStop();
 void enableRealTime();
 void showData();
+void handlePositionChange();
 int showDevices();
 int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
@@ -161,7 +162,7 @@ void handleOptions()
                 printf("Erro ao alterar estado :C\n");
             break;
         case 3:
-            //atualizar coordenadas e posição
+            handlePositionChange();
             break;
         case 4:
             //visualização de dados
@@ -373,4 +374,57 @@ void readConfigFile()
         token = strtok(NULL, ";");
     }
     printf("Number of devices found: %d\n", configuredPorts);
+}
+
+void handlePositionChange()
+{
+    char newGPS[SIZE0]; 
+    char newArea[SIZE0];
+    int total = showDevices();
+    if (!total)
+        return;
+    int device = 0, status;
+    printf("Sensor: ");
+    scanf("%d", &device);
+    getchar();
+    printf("Novas coordenadas GPS!");
+    scanf("%s",newGPS);
+    printf("Nova Area!");
+    scanf("%s",newArea);
+
+    FILE *fPrin;
+    FILE *fTemp;
+
+    //int fd = open(CONFIG_FILE, O_RDWR);
+    fPrin  = fopen(CONFIG_FILE, "r");
+    fTemp = fopen("replace.tmp", "w"); 
+    char configLine[SIZE3];
+    char newLine[SIZE3];
+    if (device >= 0 && device < configuredPorts)
+    {
+        int count = 0;
+        while ((fgets(configLine, SIZE3, fPrin)) != NULL)
+        {            
+           
+            if (count == device)
+            {
+                sprintf(newLine,"%d;%s;%s;%s;",
+                    actualConfig[device].pa,newGPS,newArea,actualConfig[device].portSerial);
+                
+                fputs(newLine, fTemp);
+            }
+            else
+                fputs(configLine, fTemp);
+
+            count++;
+           
+        }
+    }
+
+    fclose(fPrin);
+    fclose(fTemp);
+
+    remove(CONFIG_FILE);
+
+    rename("replace.tmp", CONFIG_FILE);
 }
