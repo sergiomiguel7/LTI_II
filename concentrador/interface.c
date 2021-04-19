@@ -71,8 +71,6 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2)
         return;
 
-    showRealTime = 1;
-
     pid_t pid = getpid();
 
     for (int i = 0; i < configuredPorts; i++)
@@ -94,6 +92,8 @@ void stopRealTime(int sig)
 {
     if (sig != SIGINT)
         return;
+
+    showRealTime = 0;
 
     for (int i = 0; i < configuredPorts; i++)
     {
@@ -196,7 +196,7 @@ void handleOptions()
  * */
 void enableRealTime()
 {
-    showRealTime = 0;
+    showRealTime = 1;
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
