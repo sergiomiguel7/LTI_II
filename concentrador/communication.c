@@ -187,7 +187,7 @@ void receiveData(char *readBuf, int index)
                             {
                                 if (j != 7)
                                 {
-                                    timestamp += timestamp + actualConfig[index].pa;
+                                    timestamp += actualConfig[index].pa;
                                 }
                                 float value = joinFloat(readBuf + j);
                                 sprintf(entry, "%u;%s;%s;%u;%c;%f\n",
