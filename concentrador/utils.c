@@ -99,6 +99,7 @@ long transform_data(char *date, char *hour)
 		}
 		token = strtok(NULL, "/");
 		counter++;
+		
 	}
 
 	if (counter != 3) //incorret date
