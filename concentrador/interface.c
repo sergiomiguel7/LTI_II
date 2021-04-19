@@ -304,26 +304,27 @@ void handleStop()
  * */
 int handleChangeStatus(char *buffer)
 {
-    int total = showDevices();
+    int total = showDevices(), option = 4;
     if (!total)
         return 0;
     int device = 0;
     printf("\nSensor: ");
     scanf("%d", &device);
     getchar();
+    printf("\n0-Desligar\n1-Ligado\n2-Default(sensor movimento)\nOpção: ");
+    scanf("%d", &option);
     if (device >= 0 && device < configuredPorts)
     {
-        int signal = 0;
-        if (!actualConfig[device].led_status)
-            signal = 1;
+        if (option >= 0 && option < 4)
+        {
+            actualConfig[device].led_status = option;
+
+            int size = buildLedPacket(buffer, option);
+            RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
+            return 1;
+        }
         else
-            signal = 0;
-
-        actualConfig[device].led_status = signal;
-
-        int size = buildLedPacket(buffer, signal);
-        RS232_SendBuf(actualConfig[device].serialNumber, buffer, size);
-        return 1;
+            return 0;
     }
     return 0;
 }
