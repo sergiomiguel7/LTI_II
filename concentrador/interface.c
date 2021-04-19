@@ -268,7 +268,7 @@ int showDevices()
         if (actualConfig[i].opened)
         {
             total++;
-            printf("Option: %d -> ISS: %d Led status: %d\n", i, actualConfig[i].iss, actualConfig[i].led_status);
+            printf("\n0 -> ISS: %d Led status: %d", i, actualConfig[i].iss, actualConfig[i].led_status);
         }
     }
     return total;
@@ -387,9 +387,9 @@ void handlePositionChange()
     printf("Sensor: ");
     scanf("%d", &device);
     getchar();
-    printf("Novas coordenadas GPS!");
+    printf("Novas coordenadas GPS: ");
     scanf("%s",newGPS);
-    printf("Nova Area!");
+    printf("Nova Area: ");
     scanf("%s",newArea);
 
     FILE *fPrin;
