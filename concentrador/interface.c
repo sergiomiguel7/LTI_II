@@ -21,7 +21,7 @@ void printConfig();
 void handleBegin(char *str, char *receive);
 void receiveData(char *readBuf, int index);
 void sendPacket();
-void showMenu();
+int showMenu();
 void handleOptions();
 void handleStop();
 void enableRealTime();
@@ -120,16 +120,16 @@ int main()
 /**
  * show the current menu configured on menu.txt 
  **/
-void showMenu()
+int showMenu()
 {
-    char buffer[4096];
+    int option = 10;
+    printf("\nBem vindo ao menu de admininstração!\n");
+    printf("1 - Arrancar sistema\n2 - Definir estado led nos sensores disponíveis\n3 - Atualizar posição sensor\n4 - Visualização de dados\n5 - Parar um sensor\n0 - Sair");
+    printf("\nOpção: ");
+    scanf("%d", &option);
+    getchar();
 
-    int fd = open(MENU_FILE, O_RDONLY), n;
-    while ((n = read(fd, buffer, sizeof(buffer))) > 0)
-    {
-        write(1, buffer, strlen(buffer));
-    }
-    close(fd);
+    return option;
 }
 
 /**
@@ -146,9 +146,7 @@ void handleOptions()
     {
         if (!showRealTime)
         {
-            showMenu();
-            scanf("%d", &option);
-            getchar();
+            option = showMenu();
 
             switch (option)
             {
@@ -213,44 +211,51 @@ void enableRealTime()
 void showData()
 {
 
-    char configLine[SIZE3], date1[SIZE1], hour1[SIZE1], date2[SIZE1], hour2[SIZE1];
+    char configLine[SIZE3 + 10], date1[SIZE1], hour1[SIZE1], date2[SIZE1], hour2[SIZE1], aux[SIZE_DATA];
     int sizeRead, counter = 0;
     printf("\nInsira a primeira data formato (DD/MM/AAAA): ");
     scanf("%s", date1);
-    printf("\nInsira a primeira hora (HH:MM): ");
+    printf("Insira a primeira hora (HH:MM): ");
     scanf("%s", hour1);
     printf("\nInsira a segunda data formato (DD/MM/AAAA): ");
     scanf("%s", date2);
-    printf("\nInsira a segunda hora formato (HH:MM): ");
+    printf("Insira a segunda hora formato (HH:MM): ");
     scanf("%s", hour2);
 
     long time1 = transform_data(date1, hour1);
     long time2 = transform_data(date2, hour2);
 
-    sizeRead = read(fdData, configLine, sizeof(configLine));
-    char *token = strtok(configLine, "\n");
-
-    while (token != NULL)
+    while ((sizeRead = read(fdData, configLine, sizeof(configLine))) > 0)
     {
-        counter = 0;
-        char *line = strtok(token, ";");
-        while (line != NULL)
+        char *endstr; //buffer to lines readed from file
+        char *token = strtok_r(configLine, "\n", &endstr);
+
+        while (token != NULL)
         {
-            if (counter == 3)
-            { //compare timestamp
-                long timeLine = (long)atoi(line);
-                if (timeLine > time1 && timeLine < time2)
+            counter = 0;
+            strcpy(aux, token);
+            char *line; //buffer to token line
+            char *token2 = strtok_r(token, ";", &line);
+            while (token2 != NULL)
+            {
+                if (counter == 3)
                 {
-                    char aux[SIZE_DATA];
-                    sprintf(aux, "%s\n", token);
-                    write(1, aux, strlen(aux));
+                    long timeLine = (long)atoi(token2);
+                    if (timeLine > time1 && timeLine < time2)
+                    {
+                        char linePrint[SIZE_DATA];
+                        sprintf(linePrint, "%s\n", aux);
+                        write(1, linePrint, strlen(linePrint));
+                    }
+                    break;
                 }
-                break;
+                counter++;
+                token2 = strtok_r(NULL, ";", &line);
             }
-            counter++;
-            line = strtok(NULL, ";");
+            memset(aux, 0, sizeof aux);
+            token = strtok_r(NULL, "\n", &endstr);
         }
-        token = strtok(NULL, "\n");
+        memset(configLine, 0, sizeof configLine);
     }
 }
 
