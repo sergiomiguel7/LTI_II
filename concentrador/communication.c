@@ -193,13 +193,13 @@ void receiveData(char *readBuf, int index)
                                 }
 
                                 int ldr= join16(readBuf + j);
-                                float voltage = ((ldr * 3.3) / (4095));
-                                float converted = (ldr / 1000);
-                                float lux = pow(10,((log(converted) - 1.7782)/-5));
+                                double voltage = ((ldr * 3.3) / (4095));
+                                double converted = (ldr / 1000);
+                                double lux = pow(10,((log(converted) - 1.7782)/-5));
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
-                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;%f\n",
-                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage, lux);
+                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;%f;%f\n",
+                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage, converted,lux);
                                     int n = write(fdData, entry, strlen(entry));
                                     if (showRealTime)
                                         write(1, entry, strlen(entry));
