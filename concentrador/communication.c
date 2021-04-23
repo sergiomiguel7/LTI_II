@@ -60,7 +60,8 @@ int buildLedPacket(char *str, uint8_t signal)
 
 // ----------------- IO OPERATIONS -------------
 
-void openFiles(){
+void openFiles()
+{
     fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
@@ -183,36 +184,43 @@ void receiveData(char *readBuf, int index)
                     {
                         //DATA 1 PACKET (V)
                         if (readBuf[0] == DATA1)
-                            for (int j = 7; j < readed; j = j + 4)
+                            for (int j = 7; j < readed; j = j + 2)
                             {
                                 if (j != 7)
                                 {
                                     timestamp += actualConfig[index].pa;
                                 }
-                                float value = joinFloat(readBuf + j);
-                                sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
-                                        actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, value);
-                                int n = write(fdData, entry, strlen(entry));
-                                if (showRealTime)
-                                    write(1, entry, strlen(entry));
-                                //printf("Recebi valor %f e escrevi no ficheiro %d\n", value, n);
+
+                                int ldr= join16(readBuf + j);
+                                float voltage = ((ldr * 3.3) / (4095));
+                                if (checkValue('v', voltage, index, timestamp))
+                                {
+                                    sprintf(entry, "%u;%s;%s;%u;%c;%u;\n",
+                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage);
+                                    int n = write(fdData, entry, strlen(entry));
+                                    if (showRealTime)
+                                        write(1, entry, strlen(entry));
+                                }
                             }
                         //DATA 2 PACKET (S)
                         else if (readBuf[0] == DATA2)
                         {
                             char state[12];
                             uint8_t value = readBuf[7];
-                            actualConfig[index].led_status = value;
-                            if (value)
-                                strcpy(state, "Ligado");
-                            else
-                                strcpy(state, "Desligado");
+                            if (checkValue('s', value, index, timestamp))
+                            {
+                                actualConfig[index].led_status = value;
+                                if (value)
+                                    strcpy(state, "Ligado");
+                                else
+                                    strcpy(state, "Desligado");
 
-                            sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
-                                    actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
-                            int n = write(fdData, entry, strlen(entry));
-                            if (showRealTime)
-                                write(1, entry, strlen(entry));
+                                sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
+                                        actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
+                                int n = write(fdData, entry, strlen(entry));
+                                if (showRealTime)
+                                    write(1, entry, strlen(entry));
+                            }
                         }
                     }
                 }
@@ -222,4 +230,26 @@ void receiveData(char *readBuf, int index)
         sendPacket();
         usleep(100000); /* sleep for 100 milliSeconds */
     }
+}
+
+int checkValue(char type, float value, int index, uint32_t timestamp)
+{
+
+    if (type == 'v')
+    {
+        if (value >= 0 && value <= 3.3)
+            return 1;
+    }
+
+    if (type == 's')
+    {
+        if ((int )value >= 0 && (int)value <= 2)
+            return 1;
+    }
+
+    char entry[SIZE_DATA];
+
+    sprintf(entry, "%u;%s;%s;%u;%u;\n",
+            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, BAD_VALUE_ERR);
+    write(fdErrors, entry, sizeof(entry));
 }

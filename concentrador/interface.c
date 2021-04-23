@@ -33,6 +33,9 @@ int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
 
+
+// <-------------SECTION SIGNALS -------------->
+
 /**
  * @param sig - signal identifier
  * 
@@ -117,6 +120,8 @@ int main()
     handleOptions();
 }
 
+// <-------------SECTION MENU -------------->
+
 /**
  * show the current menu configured on menu.txt 
  **/
@@ -187,6 +192,9 @@ void handleOptions()
 
     } while (option != 0);
 }
+
+
+// <-------------SECTION DATA VISUALIZATION -------------->
 
 /**
  * send a signal to all child to open real data income
@@ -276,6 +284,9 @@ int showDevices()
     return total;
 }
 
+
+// <-------------SECTION STATUS CHANGE -------------->
+
 /**
  * function to handle the stop of one sensor
  * */
@@ -332,6 +343,9 @@ int handleChangeStatus(char *buffer)
     }
     return 0;
 }
+
+
+// <-------------SECTION IO -------------->
 
 /**
  * function reads the config file declarated on api.h

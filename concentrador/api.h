@@ -14,6 +14,7 @@
 #define DATA1 3
 #define DATA2 4
 #define LED 5
+#define BAD_VALUE_ERR 2
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -28,6 +29,7 @@ uint32_t join32(char *buffer);
 void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
 long transform_data(char *date, char *hour);
+int checkValue(char type, float value, int index, uint32_t timestamp);
 
 //vars para socket
 //struct sockaddr_in servAddr, cliaddr;
