@@ -64,9 +64,7 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2 && getpid() == serverPid)
         return;
 
-    pid_t pid = getpid();
-
-    printf("Received signal in %d\n", pid);
+    write(1, "Received signal", 15);
 
     if (showRealTime == 1)
         showRealTime = 0;
@@ -85,17 +83,7 @@ void stopRealTime(int sig)
     if (sig != SIGINT && getpid() != serverPid)
         return;
 
-    printf("server pid %d entered with pid %d", serverPid, getpid());
-
     showRealTime = 0;
-
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (actualConfig[i].opened)
-        {
-            kill(actualConfig[i].pid, SIGUSR2);
-        }
-    }
 }
 
 int main()
@@ -142,46 +130,43 @@ void handleOptions()
 
     do
     {
-        if (!showRealTime)
-        {
-            option = showMenu();
+        option = showMenu();
 
-            switch (option)
-            {
-            case 0:
-                closeFiles();
-                _exit(0);
-            case 1:
-                openSerial();
-                handleBegin(bufWrite, bufRead);
-                signal(SIGINT, stopRealTime);
-                break;
-            case 2:
-                if (handleChangeStatus(bufWrite))
-                    printf("Estado alterado com sucesso! :) \n");
-                else
-                    printf("Erro ao alterar estado :C\n");
-                break;
-            case 3:
-                handlePositionChange();
-                break;
-            case 4:
-                //visualização de dados
-                option2 = 3;
-                printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
-                scanf("%d", &option2);
-                if (option2 == 1)
-                    enableRealTime();
-                else if (option2 == 2)
-                    showData();
-                break;
-            case 5:
-                handleStop();
-                break;
-            default:
-                printf("Opção inválida :c");
-                break;
-            }
+        switch (option)
+        {
+        case 0:
+            closeFiles();
+            _exit(0);
+        case 1:
+            openSerial();
+            handleBegin(bufWrite, bufRead);
+            signal(SIGINT, stopRealTime);
+            break;
+        case 2:
+            if (handleChangeStatus(bufWrite))
+                printf("Estado alterado com sucesso! :) \n");
+            else
+                printf("Erro ao alterar estado :C\n");
+            break;
+        case 3:
+            handlePositionChange();
+            break;
+        case 4:
+            //visualização de dados
+            option2 = 3;
+            printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
+            scanf("%d", &option2);
+            if (option2 == 1)
+                enableRealTime();
+            else if (option2 == 2)
+                showData();
+            break;
+        case 5:
+            handleStop();
+            break;
+        default:
+            printf("Opção inválida :c");
+            break;
         }
 
     } while (option != 0);
@@ -195,13 +180,18 @@ void handleOptions()
  * */
 void enableRealTime()
 {
-    showRealTime = 1;
+    showRealTime = !showRealTime;
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
         {
             kill(actualConfig[i].pid, SIGUSR2);
         }
+    }
+    if (showRealTime)
+    {
+        pause();
+        enableRealTime();
     }
 }
 
