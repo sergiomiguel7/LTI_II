@@ -193,10 +193,11 @@ void receiveData(char *readBuf)
                                 int ldr = join16(readBuf + j); //ldr
                                 
                                 float voltage = ((ldr * 3.3) / (4095)); //tensao
-                                float current = (voltage / (float)3000); //corrente
-                                float converted = voltage / current;
+                                float val = 5 - voltage;
+                                float current = (voltage / (float)5000); //corrente
+                                float converted = val / (current*1000);
 
-                                float lux = pow(10, ((log(converted) - 1.7782) / -5));
+                                float lux = pow(10, ((log10(converted) - 1.7782) / -5));
                                 
                                 if (checkValue('v', voltage, timestamp))
                                 {
