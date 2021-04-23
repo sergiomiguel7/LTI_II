@@ -29,7 +29,7 @@ uint32_t join32(char *buffer);
 void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
 long transform_data(char *date, char *hour);
-int checkValue(char type, float value, int index, uint32_t timestamp);
+int checkValue(char type, float value, uint32_t timestamp);
 
 //vars para socket
 //struct sockaddr_in servAddr, cliaddr;
@@ -80,4 +80,4 @@ typedef struct config {
     int led_status;
 } config;
 
-config actualConfig[MAX_SENSOR];
+config actualConfig[MAX_SENSOR], sonConfig;

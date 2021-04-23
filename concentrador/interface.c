@@ -45,21 +45,13 @@ void stopSensor(int sig)
     if (sig != SIGUSR1)
         return;
 
-    pid_t pid = getpid();
-
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (pid == actualConfig[i].pid)
-        {
-            //stop to sensor
-            char write[SIZE1];
-            int size = buildStopPacket(write, 0);
-            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
-            sleep(2);
-            RS232_CloseComport(actualConfig[i].serialNumber);
-            _exit(0);
-        }
-    }
+    //stop to sensor
+    char write[SIZE1];
+    int size = buildStopPacket(write, 0);
+    RS232_SendBuf(sonConfig.serialNumber, write, size);
+    sleep(2);
+    RS232_CloseComport(sonConfig.serialNumber);
+    _exit(0);
 }
 
 /**
@@ -70,23 +62,17 @@ void stopSensor(int sig)
  * */
 void changeRealTime(int sig)
 {
-    if (sig != SIGUSR2)
+    if (sig != SIGUSR2 && getpid() != serverPid)
         return;
 
     pid_t pid = getpid();
 
     printf("Received signal in %d\n", pid);
 
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (pid == actualConfig[i].pid)
-        {
-            if (showRealTime == 1)
-                showRealTime = 0;
-            else
-                showRealTime = 1;
-        }
-    }
+    if (showRealTime == 1)
+        showRealTime = 0;
+    else
+        showRealTime = 1;
 }
 
 /**
