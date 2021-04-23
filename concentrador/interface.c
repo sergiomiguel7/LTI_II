@@ -19,7 +19,6 @@ void openSerial();
 void readConfigFile();
 void printConfig();
 void handleBegin(char *str, char *receive);
-void receiveData(char *readBuf, int index);
 void sendPacket();
 int showMenu();
 void handleOptions();
