@@ -74,13 +74,19 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2)
         return;
 
+
     pid_t pid = getpid();
+
+    printf("Received signal in %d\n", pid);
 
     for (int i = 0; i < configuredPorts; i++)
     {
         if (pid == actualConfig[i].pid)
         {
-            showRealTime = !showRealTime;
+            if(showRealTime == 1)
+                showRealTime = 0;
+            else
+                showRealTime = 1;
         }
     }
 }
