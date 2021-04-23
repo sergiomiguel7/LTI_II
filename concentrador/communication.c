@@ -118,12 +118,12 @@ void handleBegin(char *str, char *receive)
     {
         if (actualConfig[i].opened)
         {
-
             pid_t pid = fork();
             actualConfig[i].pid = pid;
 
             if (!pid)
             {
+                sonConfig = actualConfig[i];
                 sonConfig.pid = getpid();
                 int size = buildStartPacket(str);
                 RS232_SendBuf(sonConfig.serialNumber, str, size);
