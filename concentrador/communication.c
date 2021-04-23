@@ -194,7 +194,7 @@ void receiveData(char *readBuf, int index)
 
                                 int ldr= join16(readBuf + j);
                                 float voltage = ((ldr * 3.3) / (4095));
-                                float lux = pow(10,((log(4.95) - 1.7782)/-5));
+                                float lux = pow(10,((log((ldr/1000)) - 1.7782)/-5));
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
                                     sprintf(entry, "%u;%s;%s;%u;%c;%f;%f\n",
