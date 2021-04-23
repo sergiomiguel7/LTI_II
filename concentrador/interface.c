@@ -23,7 +23,7 @@ void sendPacket();
 int showMenu();
 void handleOptions();
 void handleStop();
-void enableRealTime();
+int enableRealTime();
 void showData();
 void handlePositionChange();
 int showDevices();
@@ -157,7 +157,10 @@ void handleOptions()
             printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
             scanf("%d", &option2);
             if (option2 == 1)
-                enableRealTime();
+            {
+                if (enableRealTime())
+                    enableRealTime();
+            }
             else if (option2 == 2)
                 showData();
             break;
@@ -178,9 +181,19 @@ void handleOptions()
  * send a signal to all child to open real data income
  * 
  * */
-void enableRealTime()
+int enableRealTime()
 {
-    showRealTime = !showRealTime;
+    if (showRealTime == 1)
+    {
+        write(1, "Alterei para 0\n", 15);
+        showRealTime = 0;
+    }
+    else
+    {
+        write(1, "Alterei para 1\n", 15);
+        showRealTime = 1;
+    }
+
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -188,10 +201,12 @@ void enableRealTime()
             kill(actualConfig[i].pid, SIGUSR2);
         }
     }
+
     if (showRealTime)
     {
+        write(1, "entrei", 6);
         pause();
-        enableRealTime();
+        return 1;
     }
 }
 
