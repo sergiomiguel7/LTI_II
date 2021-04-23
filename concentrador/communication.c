@@ -183,7 +183,7 @@ void receiveData(char *readBuf, int index)
                     }
                     else
                     {
-                        //DATA 1 PACKET (V)
+                        //DATA 1 PACKET (LDR)
                         if (readBuf[0] == DATA1)
                             for (int j = 7; j < readed; j = j + 2)
                             {
@@ -198,6 +198,7 @@ void receiveData(char *readBuf, int index)
                                 double lux = pow(10,((log(converted) - 1.7782)/-5));
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
+                                    //TODO: remove converted from sprintf
                                     sprintf(entry, "%u;%s;%s;%u;%c;%f;%f;%f\n",
                                             actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage, converted,lux);
                                     int n = write(fdData, entry, strlen(entry));

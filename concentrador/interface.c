@@ -33,7 +33,6 @@ int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
 
-
 // <-------------SECTION SIGNALS -------------->
 
 /**
@@ -74,7 +73,6 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2)
         return;
 
-
     pid_t pid = getpid();
 
     printf("Received signal in %d\n", pid);
@@ -83,7 +81,7 @@ void changeRealTime(int sig)
     {
         if (pid == actualConfig[i].pid)
         {
-            if(showRealTime == 1)
+            if (showRealTime == 1)
                 showRealTime = 0;
             else
                 showRealTime = 1;
@@ -99,7 +97,7 @@ void changeRealTime(int sig)
  * */
 void stopRealTime(int sig)
 {
-    if (sig != SIGINT)
+    if (sig != SIGINT && getpid() != serverPid)
         return;
 
     showRealTime = 0;
@@ -115,11 +113,12 @@ void stopRealTime(int sig)
 
 int main()
 {
-    signal(SIGINT, stopRealTime);
+
     signal(SIGUSR1, stopSensor);
     signal(SIGUSR2, changeRealTime);
     configuredPorts = 0;
     showRealTime = 0;
+    serverPid = getpid();
 
     readConfigFile();
     openFiles();
@@ -167,6 +166,7 @@ void handleOptions()
             case 1:
                 openSerial();
                 handleBegin(bufWrite, bufRead);
+                signal(SIGINT, stopRealTime);
                 break;
             case 2:
                 if (handleChangeStatus(bufWrite))
@@ -198,7 +198,6 @@ void handleOptions()
 
     } while (option != 0);
 }
-
 
 // <-------------SECTION DATA VISUALIZATION -------------->
 
@@ -290,7 +289,6 @@ int showDevices()
     return total;
 }
 
-
 // <-------------SECTION STATUS CHANGE -------------->
 
 /**
@@ -349,7 +347,6 @@ int handleChangeStatus(char *buffer)
     }
     return 0;
 }
-
 
 // <-------------SECTION IO -------------->
 
@@ -428,7 +425,6 @@ void handlePositionChange()
         int count = 0;
         while ((fgets(configLine, SIZE3, fPrin)) != NULL)
         {
-            printf("Entrei\n");
             if (count == device)
             {
                 sprintf(newLine, "%d;%s;%s;%s;",

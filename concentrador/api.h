@@ -46,7 +46,7 @@ int fdLogs, fdErrors, fdData;
 int configuredPorts;
 
 //real time
-int showRealTime;
+int showRealTime, serverPid;
 
 //estruturas para conversao de bytes
 typedef union
