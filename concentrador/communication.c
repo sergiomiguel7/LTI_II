@@ -125,6 +125,7 @@ void handleBegin(char *str, char *receive)
             {
                 sonConfig = actualConfig[i];
                 sonConfig.pid = getpid();
+                sonConfig.realtime = 0;
                 int size = buildStartPacket(str);
                 RS232_SendBuf(sonConfig.serialNumber, str, size);
                 receiveData(receive);
@@ -176,7 +177,7 @@ void receiveData(char *readBuf)
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
                                 sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, type);
                         write(fdErrors, entry, sizeof(entry));
-                        if (showRealTime)
+                        if (sonConfig.realtime)
                             write(1, entry, strlen(entry));
                     }
                     else
@@ -191,21 +192,21 @@ void receiveData(char *readBuf)
                                 }
 
                                 int ldr = join16(readBuf + j); //ldr
-                                
+
                                 float voltage = ((ldr * 3.3) / (4095)); //tensao
                                 float val = 5 - voltage;
                                 float current = (voltage / (float)5000); //corrente
-                                float converted = val / (current*1000);
+                                float converted = val / (current * 1000);
 
                                 float lux = pow(10, ((log10(converted) - 1.7782) / -5));
-                                
+
                                 if (checkValue('v', voltage, timestamp))
                                 {
                                     //TODO: remove converted from sprintf
                                     sprintf(entry, "%u;%s;%s;%u;%c;%f;%f;%f\n",
                                             sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, voltage, converted, lux);
                                     int n = write(fdData, entry, strlen(entry));
-                                    if (showRealTime)
+                                    if (sonConfig.realtime)
                                         write(1, entry, strlen(entry));
                                 }
                             }
@@ -225,7 +226,7 @@ void receiveData(char *readBuf)
                                 sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
                                         sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, state);
                                 int n = write(fdData, entry, strlen(entry));
-                                if (showRealTime)
+                                if (sonConfig.realtime)
                                     write(1, entry, strlen(entry));
                             }
                         }

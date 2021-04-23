@@ -32,6 +32,8 @@ int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
 
+int stopAux = 0;
+
 // <-------------SECTION SIGNALS -------------->
 
 /**
@@ -64,12 +66,12 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2 && getpid() == serverPid)
         return;
 
-    write(1, "Received signal", 15);
+    write(1, "Received signal\n", 16);
 
-    if (showRealTime == 1)
-        showRealTime = 0;
+    if (sonConfig.realtime)
+        sonConfig.realtime = 0;
     else
-        showRealTime = 1;
+        sonConfig.realtime = 1;
 }
 
 /**
@@ -82,8 +84,6 @@ void stopRealTime(int sig)
 {
     if (sig != SIGINT && getpid() != serverPid)
         return;
-
-    showRealTime = 0;
 }
 
 int main()
@@ -91,7 +91,6 @@ int main()
     signal(SIGUSR1, stopSensor);
     signal(SIGUSR2, changeRealTime);
     configuredPorts = 0;
-    showRealTime = 0;
     serverPid = getpid();
 
     printf("server pid: %d\n", serverPid);
@@ -158,8 +157,7 @@ void handleOptions()
             scanf("%d", &option2);
             if (option2 == 1)
             {
-                if (enableRealTime())
-                    enableRealTime();
+                enableRealTime();
             }
             else if (option2 == 2)
                 showData();
@@ -183,30 +181,28 @@ void handleOptions()
  * */
 int enableRealTime()
 {
-    if (showRealTime == 1)
+    int counter = 0;
+    while (counter < 2)
     {
-        write(1, "Alterei para 0\n", 15);
-        showRealTime = 0;
-    }
-    else
-    {
-        write(1, "Alterei para 1\n", 15);
-        showRealTime = 1;
-    }
+        if (stopAux == 0)
+            stopAux = 1;
+        else
+            stopAux = 0;
 
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (actualConfig[i].opened)
+        for (int i = 0; i < configuredPorts; i++)
         {
-            kill(actualConfig[i].pid, SIGUSR2);
+            if (actualConfig[i].opened)
+            {
+                kill(actualConfig[i].pid, SIGUSR2);
+            }
         }
-    }
 
-    if (showRealTime)
-    {
-        write(1, "entrei", 6);
-        pause();
-        return 1;
+        if (stopAux)
+        {
+            write(1, "entrei\n", 7);
+            pause();
+        }
+        counter++;
     }
 }
 

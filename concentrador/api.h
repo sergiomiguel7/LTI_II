@@ -46,7 +46,7 @@ int fdLogs, fdErrors, fdData;
 int configuredPorts;
 
 //real time
-int showRealTime,serverPid;
+int serverPid;
 
 //estruturas para conversao de bytes
 typedef union
@@ -78,6 +78,7 @@ typedef struct config {
     char area[SIZE0]; //where is the sensor
     char GPS[SIZE0]; //gps coordinates from sensor
     int led_status;
+    int realtime;
 } config;
 
 config actualConfig[MAX_SENSOR], sonConfig;
