@@ -193,9 +193,9 @@ void receiveData(char *readBuf, int index)
                                 }
 
                                 int ldr= join16(readBuf + j);
-                                double voltage = ((ldr * 3.3) / (4095));
-                                double converted = (ldr / 1000);
-                                double lux = pow(10,((log(converted) - 1.7782)/-5));
+                                float voltage = ((ldr * 3.3) / (4095));
+                                float converted = ((float) ldr / 1000);
+                                float lux = pow(10,((log(converted) - 1.7782)/-5));
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
                                     //TODO: remove converted from sprintf
