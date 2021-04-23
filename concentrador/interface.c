@@ -41,7 +41,7 @@ int buildLedPacket(char *str, uint8_t signal);
  **/
 void stopSensor(int sig)
 {
-    if (sig != SIGUSR1)
+    if (sig != SIGUSR1 && getpid() == serverPid)
         return;
 
     //stop to sensor
@@ -61,7 +61,7 @@ void stopSensor(int sig)
  * */
 void changeRealTime(int sig)
 {
-    if (sig != SIGUSR2 && getpid() != serverPid)
+    if (sig != SIGUSR2 && getpid() == serverPid)
         return;
 
     pid_t pid = getpid();
@@ -85,6 +85,8 @@ void stopRealTime(int sig)
     if (sig != SIGINT && getpid() != serverPid)
         return;
 
+    printf("server pid %d entered with pid %d", serverPid, getpid());
+
     showRealTime = 0;
 
     for (int i = 0; i < configuredPorts; i++)
@@ -98,12 +100,13 @@ void stopRealTime(int sig)
 
 int main()
 {
-
     signal(SIGUSR1, stopSensor);
     signal(SIGUSR2, changeRealTime);
     configuredPorts = 0;
     showRealTime = 0;
     serverPid = getpid();
+
+    printf("server pid: %d\n", serverPid);
 
     readConfigFile();
     openFiles();
