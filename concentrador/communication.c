@@ -195,7 +195,7 @@ void receiveData(char *readBuf, int index)
                                 float voltage = ((ldr * 3.3) / (4095));
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
-                                    sprintf(entry, "%u;%s;%s;%u;%c;%u;\n",
+                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
                                             actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage);
                                     int n = write(fdData, entry, strlen(entry));
                                     if (showRealTime)
