@@ -195,11 +195,10 @@ void receiveData(char *readBuf, int index)
                                 int ldr= join16(readBuf + j);
                                 float voltage = ((ldr * 3.3) / (4095));
                                 float lux = pow(10,((log(4.95) - 1.7782)/-5));
-                                printf("lux %f", lux);
                                 if (checkValue('v', voltage, index, timestamp))
                                 {
-                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
-                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage);
+                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;%f\n",
+                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage, lux);
                                     int n = write(fdData, entry, strlen(entry));
                                     if (showRealTime)
                                         write(1, entry, strlen(entry));
