@@ -190,10 +190,14 @@ void receiveData(char *readBuf)
                                     timestamp += sonConfig.pa;
                                 }
 
-                                int ldr = join16(readBuf + j);
-                                float voltage = ((ldr * 3.3) / (4095));
-                                float converted = ((float)ldr / 1000);
+                                int ldr = join16(readBuf + j); //ldr
+                                
+                                float voltage = ((ldr * 3.3) / (4095)); //tensao
+                                float current = (voltage / (float)3000); //corrente
+                                float converted = voltage / current;
+
                                 float lux = pow(10, ((log(converted) - 1.7782) / -5));
+                                
                                 if (checkValue('v', voltage, timestamp))
                                 {
                                     //TODO: remove converted from sprintf
