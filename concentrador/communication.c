@@ -10,7 +10,7 @@
 #include "rs232/rs232.h"
 #include "api.h"
 
-void receiveData(char *readBuf, int index);
+void receiveData(char *readBuf);
 
 // ------- BUILD PACKETS ---------------
 
@@ -21,12 +21,12 @@ void receiveData(char *readBuf, int index);
 * 
 * build the start packet to send to sensor
 */
-int buildStartPacket(char *str, int index)
+int buildStartPacket(char *str)
 {
     str[0] = (char)START;
     uint32_t ts = current_timestamp();
     split32(str + 1, ts);
-    split32(str + 5, actualConfig[index].pa);
+    split32(str + 5, sonConfig.pa);
     return 9;
 }
 
@@ -123,10 +123,12 @@ void handleBegin(char *str, char *receive)
 
             if (!pid)
             {
-                actualConfig[i].pid = getpid();
-                int size = buildStartPacket(str, i);
-                RS232_SendBuf(actualConfig[i].serialNumber, str, size);
-                receiveData(receive, i);
+                sonConfig = actualConfig[i];
+                sonConfig.pid = getpid();
+                sonConfig.realtime = 0;
+                int size = buildStartPacket(str);
+                RS232_SendBuf(sonConfig.serialNumber, str, size);
+                receiveData(receive);
             }
         }
     }
@@ -138,13 +140,10 @@ void handleBegin(char *str, char *receive)
  **/
 void sendPacket()
 {
-    for (int i = 0; i < configuredPorts; i++)
+    if (sonConfig.opened)
     {
-        if (actualConfig[i].opened)
-        {
-            char str[1] = "a";
-            RS232_SendBuf(actualConfig[i].serialNumber, str, 1);
-        }
+        char str[1] = "a";
+        RS232_SendBuf(sonConfig.serialNumber, str, 1);
     }
 }
 
@@ -154,21 +153,21 @@ void sendPacket()
  * DATAx => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> TGM | 7... -> VALi| , x = 1 or 2
  * ERROR => |0 -> TYPE | 1 -> ISS | 2-5 -> TSP | 6 -> ERR |
  **/
-void receiveData(char *readBuf, int index)
+void receiveData(char *readBuf)
 {
     int readed = 0;
     char entry[SIZE_DATA];
     while (1)
     {
-        if (actualConfig[index].opened)
+        if (sonConfig.opened)
         {
-            readed = RS232_PollComport(actualConfig[index].serialNumber, readBuf, SIZE_DATA);
+            readed = RS232_PollComport(sonConfig.serialNumber, readBuf, SIZE_DATA);
 
             if (readed > 0)
             {
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
-                    actualConfig[index].iss = readBuf[1];
+                    sonConfig.iss = readBuf[1];
                     uint32_t timestamp = join32(readBuf + 2);
 
                     uint8_t type = readBuf[6];
@@ -176,9 +175,9 @@ void receiveData(char *readBuf, int index)
                     if (readBuf[0] == ERROR)
                     {
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
-                                actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, type);
+                                sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, type);
                         write(fdErrors, entry, sizeof(entry));
-                        if (showRealTime)
+                        if (sonConfig.realtime)
                             write(1, entry, strlen(entry));
                     }
                     else
@@ -189,20 +188,25 @@ void receiveData(char *readBuf, int index)
                             {
                                 if (j != 7)
                                 {
-                                    timestamp += actualConfig[index].pa;
+                                    timestamp += sonConfig.pa;
                                 }
 
-                                int ldr= join16(readBuf + j);
-                                float voltage = ((ldr * 3.3) / (4095));
-                                float converted = ((float) ldr / 1000);
-                                float lux = pow(10,((log(converted) - 1.7782)/-5));
-                                if (checkValue('v', voltage, index, timestamp))
+                                int ldr = join16(readBuf + j); //ldr
+
+                                float voltage = ((ldr * 3.3) / (4095)); //tensao
+                                float val = 5 - voltage;
+                                float current = (voltage / (float)5000); //corrente
+                                float converted = val / (current * 1000);
+
+                                float lux = pow(10, ((log10(converted) - 1.7782) / -5));
+
+                                if (checkValue('v', voltage, timestamp))
                                 {
                                     //TODO: remove converted from sprintf
                                     sprintf(entry, "%u;%s;%s;%u;%c;%f;%f;%f\n",
-                                            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, voltage, converted,lux);
+                                            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, voltage, converted, lux);
                                     int n = write(fdData, entry, strlen(entry));
-                                    if (showRealTime)
+                                    if (sonConfig.realtime)
                                         write(1, entry, strlen(entry));
                                 }
                             }
@@ -211,18 +215,18 @@ void receiveData(char *readBuf, int index)
                         {
                             char state[12];
                             uint8_t value = readBuf[7];
-                            if (checkValue('s', value, index, timestamp))
+                            if (checkValue('s', value, timestamp))
                             {
-                                actualConfig[index].led_status = value;
+                                sonConfig.led_status = value;
                                 if (value)
                                     strcpy(state, "Ligado");
                                 else
                                     strcpy(state, "Desligado");
 
                                 sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
-                                        actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, (char)type, state);
+                                        sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, state);
                                 int n = write(fdData, entry, strlen(entry));
-                                if (showRealTime)
+                                if (sonConfig.realtime)
                                     write(1, entry, strlen(entry));
                             }
                         }
@@ -236,7 +240,7 @@ void receiveData(char *readBuf, int index)
     }
 }
 
-int checkValue(char type, float value, int index, uint32_t timestamp)
+int checkValue(char type, float value, uint32_t timestamp)
 {
 
     if (type == 'v')
@@ -247,13 +251,13 @@ int checkValue(char type, float value, int index, uint32_t timestamp)
 
     if (type == 's')
     {
-        if ((int )value >= 0 && (int)value <= 2)
+        if ((int)value >= 0 && (int)value <= 2)
             return 1;
     }
 
     char entry[SIZE_DATA];
 
     sprintf(entry, "%u;%s;%s;%u;%u;\n",
-            actualConfig[index].iss, actualConfig[index].area, actualConfig[index].GPS, timestamp, BAD_VALUE_ERR);
+            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, BAD_VALUE_ERR);
     write(fdErrors, entry, sizeof(entry));
 }

@@ -29,7 +29,7 @@ uint32_t join32(char *buffer);
 void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
 long transform_data(char *date, char *hour);
-int checkValue(char type, float value, int index, uint32_t timestamp);
+int checkValue(char type, float value, uint32_t timestamp);
 
 //vars para socket
 //struct sockaddr_in servAddr, cliaddr;
@@ -46,7 +46,7 @@ int fdLogs, fdErrors, fdData;
 int configuredPorts;
 
 //real time
-int showRealTime, serverPid;
+int serverPid;
 
 //estruturas para conversao de bytes
 typedef union
@@ -78,6 +78,7 @@ typedef struct config {
     char area[SIZE0]; //where is the sensor
     char GPS[SIZE0]; //gps coordinates from sensor
     int led_status;
+    int realtime;
 } config;
 
-config actualConfig[MAX_SENSOR];
+config actualConfig[MAX_SENSOR], sonConfig;

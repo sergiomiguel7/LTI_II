@@ -19,12 +19,11 @@ void openSerial();
 void readConfigFile();
 void printConfig();
 void handleBegin(char *str, char *receive);
-void receiveData(char *readBuf, int index);
 void sendPacket();
 int showMenu();
 void handleOptions();
 void handleStop();
-void enableRealTime();
+int enableRealTime();
 void showData();
 void handlePositionChange();
 int showDevices();
@@ -32,6 +31,8 @@ int handleChangeStatus(char *buffer);
 int buildStartPacket(char *str, int index);
 int buildStopPacket(char *str, uint8_t stopCode);
 int buildLedPacket(char *str, uint8_t signal);
+
+int stopAux = 0;
 
 // <-------------SECTION SIGNALS -------------->
 
@@ -42,24 +43,16 @@ int buildLedPacket(char *str, uint8_t signal);
  **/
 void stopSensor(int sig)
 {
-    if (sig != SIGUSR1)
+    if (sig != SIGUSR1 && getpid() == serverPid)
         return;
 
-    pid_t pid = getpid();
-
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (pid == actualConfig[i].pid)
-        {
-            //stop to sensor
-            char write[SIZE1];
-            int size = buildStopPacket(write, 0);
-            RS232_SendBuf(actualConfig[i].serialNumber, write, size);
-            sleep(2);
-            RS232_CloseComport(actualConfig[i].serialNumber);
-            _exit(0);
-        }
-    }
+    //stop to sensor
+    char write[SIZE1];
+    int size = buildStopPacket(write, 0);
+    RS232_SendBuf(sonConfig.serialNumber, write, size);
+    sleep(2);
+    RS232_CloseComport(sonConfig.serialNumber);
+    _exit(0);
 }
 
 /**
@@ -70,23 +63,13 @@ void stopSensor(int sig)
  * */
 void changeRealTime(int sig)
 {
-    if (sig != SIGUSR2)
+    if (sig != SIGUSR2 && getpid() == serverPid)
         return;
 
-    pid_t pid = getpid();
-
-    printf("Received signal in %d\n", pid);
-
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (pid == actualConfig[i].pid)
-        {
-            if (showRealTime == 1)
-                showRealTime = 0;
-            else
-                showRealTime = 1;
-        }
-    }
+    if (sonConfig.realtime)
+        sonConfig.realtime = 0;
+    else
+        sonConfig.realtime = 1;
 }
 
 /**
@@ -99,25 +82,15 @@ void stopRealTime(int sig)
 {
     if (sig != SIGINT && getpid() != serverPid)
         return;
-
-    showRealTime = 0;
-
-    for (int i = 0; i < configuredPorts; i++)
-    {
-        if (actualConfig[i].opened)
-        {
-            kill(actualConfig[i].pid, SIGUSR2);
-        }
-    }
 }
 
 int main()
 {
-
     signal(SIGUSR1, stopSensor);
     signal(SIGUSR2, changeRealTime);
+    signal(SIGINT, stopRealTime);
+
     configuredPorts = 0;
-    showRealTime = 0;
     serverPid = getpid();
 
     readConfigFile();
@@ -154,46 +127,44 @@ void handleOptions()
 
     do
     {
-        if (!showRealTime)
-        {
-            option = showMenu();
+        option = showMenu();
 
-            switch (option)
+        switch (option)
+        {
+        case 0:
+            closeFiles();
+            _exit(0);
+        case 1:
+            openSerial();
+            handleBegin(bufWrite, bufRead);
+            break;
+        case 2:
+            if (handleChangeStatus(bufWrite))
+                printf("Estado alterado com sucesso! :) \n");
+            else
+                printf("Erro ao alterar estado :C\n");
+            break;
+        case 3:
+            handlePositionChange();
+            break;
+        case 4:
+            //visualização de dados
+            option2 = 3;
+            printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
+            scanf("%d", &option2);
+            if (option2 == 1)
             {
-            case 0:
-                closeFiles();
-                _exit(0);
-            case 1:
-                openSerial();
-                handleBegin(bufWrite, bufRead);
-                signal(SIGINT, stopRealTime);
-                break;
-            case 2:
-                if (handleChangeStatus(bufWrite))
-                    printf("Estado alterado com sucesso! :) \n");
-                else
-                    printf("Erro ao alterar estado :C\n");
-                break;
-            case 3:
-                handlePositionChange();
-                break;
-            case 4:
-                //visualização de dados
-                option2 = 3;
-                printf("\n1-Tempo Real\n2-Dados armazenados\nOpção: ");
-                scanf("%d", &option2);
-                if (option2 == 1)
-                    enableRealTime();
-                else if (option2 == 2)
-                    showData();
-                break;
-            case 5:
-                handleStop();
-                break;
-            default:
-                printf("Opção inválida :c");
-                break;
+                enableRealTime();
             }
+            else if (option2 == 2)
+                showData();
+            break;
+        case 5:
+            handleStop();
+            break;
+        default:
+            printf("Opção inválida :c");
+            break;
         }
 
     } while (option != 0);
@@ -205,15 +176,29 @@ void handleOptions()
  * send a signal to all child to open real data income
  * 
  * */
-void enableRealTime()
+int enableRealTime()
 {
-    showRealTime = 1;
-    for (int i = 0; i < configuredPorts; i++)
+    int counter = 0;
+    while (counter < 2)
     {
-        if (actualConfig[i].opened)
+        if (stopAux == 0)
+            stopAux = 1;
+        else
+            stopAux = 0;
+
+        for (int i = 0; i < configuredPorts; i++)
         {
-            kill(actualConfig[i].pid, SIGUSR2);
+            if (actualConfig[i].opened)
+            {
+                kill(actualConfig[i].pid, SIGUSR2);
+            }
         }
+
+        if (stopAux) //wait receiving sigint signal to close real time
+        {
+            pause();
+        }
+        counter++;
     }
 }
 
