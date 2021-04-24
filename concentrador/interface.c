@@ -66,8 +66,6 @@ void changeRealTime(int sig)
     if (sig != SIGUSR2 && getpid() == serverPid)
         return;
 
-    write(1, "Received signal\n", 16);
-
     if (sonConfig.realtime)
         sonConfig.realtime = 0;
     else
@@ -90,10 +88,10 @@ int main()
 {
     signal(SIGUSR1, stopSensor);
     signal(SIGUSR2, changeRealTime);
+    signal(SIGINT, stopRealTime);
+
     configuredPorts = 0;
     serverPid = getpid();
-
-    printf("server pid: %d\n", serverPid);
 
     readConfigFile();
     openFiles();
@@ -139,7 +137,6 @@ void handleOptions()
         case 1:
             openSerial();
             handleBegin(bufWrite, bufRead);
-            signal(SIGINT, stopRealTime);
             break;
         case 2:
             if (handleChangeStatus(bufWrite))
@@ -197,9 +194,8 @@ int enableRealTime()
             }
         }
 
-        if (stopAux)
+        if (stopAux) //wait receiving sigint signal to close real time
         {
-            write(1, "entrei\n", 7);
             pause();
         }
         counter++;
