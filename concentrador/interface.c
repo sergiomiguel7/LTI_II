@@ -51,7 +51,7 @@ void stopSensor(int sig)
     int size = buildStopPacket(write, 0);
     RS232_SendBuf(sonConfig.serialNumber, write, size);
     sleep(2);
-    RS232_CloseComport(sonConfig.serialNumber);
+    sonConfig.opened = 0;
     _exit(0);
 }
 

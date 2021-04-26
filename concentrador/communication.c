@@ -235,6 +235,10 @@ void receiveData(char *readBuf)
                 memset(entry, 0, sizeof entry);
             }
         }
+        else
+        {
+            RS232_CloseComport(sonConfig.serialNumber);
+        }
         sendPacket();
         usleep(100000); /* sleep for 100 milliSeconds */
     }
