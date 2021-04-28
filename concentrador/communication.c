@@ -121,7 +121,7 @@ void handleBegin(char *str, char *receive)
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        if (actualConfig[i].opened == 1 && actualConfig[i].pid > 0)
+        if (actualConfig[i].opened == 1 && actualConfig[i].pid == 0)
         {
             pid_t pid = fork();
             actualConfig[i].pid = pid;
