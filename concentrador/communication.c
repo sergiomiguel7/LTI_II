@@ -75,7 +75,7 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        if (!actualConfig[i].opened)
+        if (actualConfig[i].opened != 1)
         {
             actualConfig[i].led_status = 0;
             actualConfig[i].pid = 0;
