@@ -80,13 +80,14 @@ void openSerial()
             actualConfig[i].led_status = 0;
             actualConfig[i].pid = 0;
             actualConfig[i].opened = 1;
+
             actualConfig[i].serialNumber = RS232_GetPortnr(actualConfig[i].portSerial);
 
             int status = RS232_OpenComport(actualConfig[i].serialNumber, 115200, "8N1", 0);
             if (status)
             {
                 actualConfig[i].opened = 0;
-                printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
+                //printf("Cannot open port %s :c\n", actualConfig[i].portSerial);
             }
         }
     }
@@ -120,7 +121,7 @@ void handleBegin(char *str, char *receive)
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-        if (actualConfig[i].opened && !actualConfig[i].pid)
+        if (actualConfig[i].opened == 1 && actualConfig[i].pid > 0)
         {
             pid_t pid = fork();
             actualConfig[i].pid = pid;
