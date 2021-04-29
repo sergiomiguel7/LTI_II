@@ -12,11 +12,10 @@ int lstState = LOW;
   return true -> O pacote foi preenchido
   return false -> O pacote ainda tem espaço livre
 */
-bool addInfo(uint8_t packet[], float info, int pos) {
-  splitFloat(&packet[pos], info);    
-  Serial.println((String)pos +" ->->-> " + info + " >>>> " + packet[pos] + " " + packet[pos + 1] + " " + packet[pos + 2] + " " + packet[pos + 3]);
+bool addInfo(uint8_t packet[], uint16_t info, int pos) {
+  split16(&packet[pos], info);    
   if (pos > 120) {
-    Serial.println((String)"Cheguei Aqui!!!!");
+    Serial.println((String)"Enviei um pacote!");
     return true;
   }
   return false;

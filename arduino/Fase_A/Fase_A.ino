@@ -133,12 +133,12 @@ void loop() {
 void sensorSystem() {
   int led;
   // put your main code here, to run repeatedly:
-  int ldrValue = analogRead(ldrPin);
+  uint16_t ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
 
   float voltage_value =  ((ldrValue * 3.3 ) / (4095));
 
-
+  Serial.println((String)"Posição: "+pos+" Valor do LDR: "+ldrValue+" Tensão: "+voltage_value);
 
   if (pirStat == HIGH) {
     if (voltage_value <= 2.0) {
@@ -161,13 +161,13 @@ void sensorSystem() {
   }
 
 
-  if (addInfo(dataPacket, voltage_value, pos)) {
-    pos = pos + 4;
+  if (addInfo(dataPacket, ldrValue, pos)) {
+    pos = pos + 2;
     size_t num = SerialBT.write(dataPacket, pos);
     data1Packet(dataPacket, currentTimestamp());
     pos = 7;
   } else {
-    pos = pos + 4;
+    pos = pos + 2;
   }
 
 }

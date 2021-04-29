@@ -10,7 +10,7 @@
 #define ISS 1
 
 
-bool addInfo(uint8_t packet[], float info, int pos);
+bool addInfo(uint8_t packet[], uint16_t info, int pos);
 
 void startPacket(uint8_t packet[], uint32_t *tsp, uint32_t *pa );
 
