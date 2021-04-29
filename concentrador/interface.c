@@ -106,7 +106,7 @@ int showMenu()
 {
     int option = 10;
     printf("\nBem vindo ao menu de admininstração!\n");
-    printf("1 - Arrancar sistema\n2 - Definir estado led nos sensores disponíveis\n3 - Atualizar posição sensor\n4 - Visualização de dados\n5 - Parar um sensor\n0 - Sair");
+    printf("1 - Arrancar sistema\n2 - Definir estado led\n3 - Atualizar posição sensor\n4 - Visualização de dados\n5 - Parar um sensor\n0 - Sair");
     printf("\nOpção: ");
     scanf("%d", &option);
     getchar();
@@ -208,7 +208,7 @@ int enableRealTime()
 void showData()
 {
 
-    char configLine[SIZE3 + 10], date1[SIZE1], hour1[SIZE1], date2[SIZE1], hour2[SIZE1], aux[SIZE_DATA];
+    char configLine[SIZE3], date1[SIZE1], hour1[SIZE1], date2[SIZE1], hour2[SIZE1], aux[SIZE2];
     int sizeRead, counter = 0;
     printf("\nInsira a primeira data formato (DD/MM/AAAA): ");
     scanf("%s", date1);
@@ -240,7 +240,7 @@ void showData()
                     long timeLine = (long)atoi(token2);
                     if (timeLine > time1 && timeLine < time2)
                     {
-                        char linePrint[SIZE_DATA];
+                        char linePrint[SIZE2];
                         sprintf(linePrint, "%s\n", aux);
                         write(1, linePrint, strlen(linePrint));
                     }
@@ -262,12 +262,13 @@ void showData()
 int showDevices()
 {
     int total = 0;
+    printf("\nSensores disponíveis: \n");
     for (int i = 0; i < configuredPorts; i++)
     {
-        if (actualConfig[i].opened)
+        if (actualConfig[i].opened == 1)
         {
             total++;
-            printf("\n%d -> ISS: %d Led status: %d", i, actualConfig[i].iss, actualConfig[i].led_status);
+            printf("Option: %d - ISS: %d Área: %s Estado: %d", i, actualConfig[i].iss, actualConfig[i].area ,actualConfig[i].led_status);
         }
     }
     return total;
@@ -284,7 +285,7 @@ void handleStop()
     if (!total)
         return;
     int device = 0, status;
-    printf("\nSensor: ");
+    printf("\n\nSensor: ");
     scanf("%d", &device);
     getchar();
     if (device >= 0 && device < configuredPorts)
@@ -311,7 +312,7 @@ int handleChangeStatus(char *buffer)
     if (!total)
         return 0;
     int device = 0;
-    printf("\nSensor: ");
+    printf("\n\nSensor: ");
     scanf("%d", &device);
     getchar();
     printf("\n0-Desligar\n1-Ligado\n2-Default(sensor movimento)\nOpção: ");
@@ -388,7 +389,7 @@ void handlePositionChange()
     if (!total)
         return;
     int device = 0, status;
-    printf("\nSensor: ");
+    printf("\n\nSensor: ");
     scanf("%d", &device);
     getchar();
     printf("Novas coordenadas GPS: ");
