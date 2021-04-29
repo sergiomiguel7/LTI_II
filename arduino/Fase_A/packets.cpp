@@ -52,7 +52,7 @@ void data1Packet(uint8_t packet[] , uint32_t tsp) {
   packet[0] = DATA1;
   packet[1] = ISS;
   split32(&packet[2], tsp);
-  packet[6] = 'V';
+  packet[6] = 'L';
 }
 
 
