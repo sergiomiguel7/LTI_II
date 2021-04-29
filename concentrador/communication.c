@@ -63,7 +63,7 @@ int buildLedPacket(char *str, uint8_t signal)
 
 void openFiles()
 {
-    fdData = open("log/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdData = open("log/data.csv", O_RDWR | O_CREAT | O_APPEND, 0666);
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
@@ -198,7 +198,7 @@ void receiveData(char *readBuf)
 
                                 float voltage = ((ldr * 3.3) / (4095)); //tensao
                                 float val = 5 - voltage;
-                                float current = (voltage / (float)5000); //corrente
+                                float current = (voltage / (float)3000); //corrente
                                 float converted = val / (current * 1000);
 
                                 float lux = pow(10, ((log10(converted) - 1.7782) / -5));
