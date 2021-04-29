@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <fcntl.h>
@@ -103,6 +104,7 @@ void closeFiles()
     {
         if (actualConfig[i].opened)
         {
+            kill(actualConfig[i].pid, SIGKILL);
             RS232_CloseComport(actualConfig[i].serialNumber);
         }
     }
