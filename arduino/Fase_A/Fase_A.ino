@@ -1,7 +1,7 @@
 #include "BluetoothSerial.h"
 #include "packets.h"
 #include "api.h"
-
+#include "math.h"
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
@@ -136,9 +136,13 @@ void sensorSystem() {
   uint16_t ldrValue = analogRead(ldrPin);
   int pirStat = digitalRead(pirPin);
 
-  float voltage_value =  ((ldrValue * 3.3 ) / (4095));
+  float voltage_value = ((ldrValue * 3.3) / (4095)); //
+  float val = 5 - voltage_value;
+  float current = (voltage_value / (float)3000); //
+  float converted = val / (current * 1000);
+  float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
-  Serial.println((String)"Posição: "+pos+" Valor do LDR: "+ldrValue+" Tensão: "+voltage_value);
+  Serial.println((String)"Posição: " + pos + " Valor do LDR: " + ldrValue + " Tensão: " + voltage_value + " Lux: "+ lux);
 
   if (pirStat == HIGH) {
     if (voltage_value <= 2.0) {
