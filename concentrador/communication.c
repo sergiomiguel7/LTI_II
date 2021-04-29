@@ -194,21 +194,21 @@ void receiveData(char *readBuf)
                                     timestamp += sonConfig.pa;
                                 }
 
+
                                 int ldr = join16(readBuf + j); //ldr
 
-                                double voltage = ((ldr * 3.3) / (4095)); //tensao
-                                double val = 5 - voltage;
-                                double current = (voltage / (float)3000); //corrente
-                                double converted = (val / (current * 1000)) * 10;
-                                double test = (double) 12 / (double) 5;
+                                float voltage = ((ldr * 3.3) / (4095)); //tensao
+                                float val = 5 - voltage;
+                                float current = (voltage / (float)3000); //corrente
+                                float converted = val / (current * 1000);
 
-                                double lux = pow(converted, test) * 293000;
+                                float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
                                 if (checkValue('v', voltage, timestamp))
                                 {
                                     //TODO: remove converted from sprintf
-                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;%f;%f;%f\n",
-                                            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, voltage, converted, test,lux);
+                                    sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
+                                            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, lux);
                                     int n = write(fdData, entry, strlen(entry));
                                     if (sonConfig.realtime)
                                         write(1, entry, strlen(entry));
