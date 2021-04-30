@@ -14,7 +14,7 @@
 #define DATA1 3
 #define DATA2 4
 #define LED 5
-#define BAD_VALUE_ERR 2
+#define BAD_VALUE_ERR 3
 
 #include<stdint.h>
 #include<stdbool.h>
