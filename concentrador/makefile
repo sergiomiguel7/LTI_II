@@ -5,6 +5,8 @@ all: compile config
 compile:
 	mkdir -p out
 	$(CC) interface.c communication.c utils.c rs232/rs232.c -lm -o out/interface.o
+	$(CC) server.c -o out/server.o
+	$(CC) ../sensors/udp_client.c -o out/udp_client.o
 config:
 	sh scripts/connection2.sh
 	sleep 2
