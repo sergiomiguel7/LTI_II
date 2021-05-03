@@ -57,7 +57,8 @@ void loop() {
       reseting();
       startPacket(aux, &startTS, &pa);
       data1Packet(dataPacket, currentTimestamp());
-
+      
+      Serial.println((String)"Timestamp inicial " + startTS);
 
       bool erros = false;
 
@@ -143,6 +144,7 @@ void sensorSystem() {
   float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
   Serial.println((String)"Posição: " + pos + " Valor do LDR: " + ldrValue + " Tensão: " + voltage_value + " Lux: "+ lux);
+  Serial.println((String)"Timestamp: "+currentTimestamp());
 
   if (pirStat == HIGH) {
     if (voltage_value <= 2.0) {
@@ -178,7 +180,8 @@ void sensorSystem() {
 
 
 uint32_t currentTimestamp() {
-  return (millis() - initialTS) + startTS;
+  Serial.println((String)"Millis: " + millis() + " InitialTS: " + initialTS + " startTS: "+startTS);
+  return ((uint32_t)((millis() - initialTS)/1000) + startTS);
 }
 
 int conditions(bool led) {
