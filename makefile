@@ -8,6 +8,7 @@ compile:
 	$(CC) concentrador/interface.c concentrador/communication.c concentrador/utils.c concentrador/rs232/rs232.c -lm -o out/interface.o
 	$(CC) concentrador/server.c -o out/server.o
 	$(CC) sensors/udp_client.c -o out/udp_client.o
+	$(CC) gestor/gestor.c -o out/gestor.o
 config: 
 	sh scripts/connection2.sh
 	sleep 2
