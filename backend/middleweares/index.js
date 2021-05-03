@@ -1,8 +1,8 @@
-module.exports = (app) => {
-    const express = require('express');
+module.exports = (app, express) => {
     const cors = require('cors');
     const helmet = require('helmet');
     const morgan = require('morgan');
+    const fs = require('fs');
     require('dotenv').config();
 
     app.use(express.json());
