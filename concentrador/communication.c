@@ -100,6 +100,10 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
+}
+
+void closePorts()
+{
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -170,6 +174,7 @@ void receiveData(char *readBuf)
 
             if (readed > 0)
             {
+                openFiles();
                 if (readBuf[0] >= ERROR && readBuf[0] <= DATA2)
                 {
                     sonConfig.iss = readBuf[1];
@@ -193,9 +198,8 @@ void receiveData(char *readBuf)
                             {
                                 if (j != 7)
                                 {
-                                    timestamp += sonConfig.pa;
+                                    timestamp += (sonConfig.pa / 1000);
                                 }
-
 
                                 int ldr = join16(readBuf + j); //ldr
 
@@ -239,6 +243,7 @@ void receiveData(char *readBuf)
                     }
                 }
                 memset(entry, 0, sizeof entry);
+                closeFiles();
             }
         }
         else
@@ -271,4 +276,6 @@ int checkValue(char type, float value, uint32_t timestamp)
     sprintf(entry, "%u;%s;%s;%u;%u;\n",
             sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, BAD_VALUE_ERR);
     write(fdErrors, entry, sizeof(entry));
+
+    return 0;
 }

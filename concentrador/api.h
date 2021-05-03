@@ -1,5 +1,3 @@
-#define ADDR "127.0.0.1"
-#define PORT 8000
 #define CONFIG_FILE "../env/config.txt"
 #define MENU_FILE "../env/menu.txt"
 #define SIZE0 32
@@ -31,13 +29,6 @@ float joinFloat(char *bufffer);
 long transform_data(char *date, char *hour);
 int checkValue(char type, float value, uint32_t timestamp);
 
-//vars para socket
-//struct sockaddr_in servAddr, cliaddr;
-//int sockfd;
-
-
-//socket
-int sockManager;
 
 //ficheiros
 int fdLogs, fdErrors, fdData;
@@ -46,7 +37,7 @@ int fdLogs, fdErrors, fdData;
 int configuredPorts;
 
 //real time
-int serverPid;
+int serverPid, udp_pid;
 
 //estruturas para conversao de bytes
 typedef union

@@ -14,6 +14,7 @@
 //define functions
 void handler(int sign);
 void openFiles();
+void closePorts();
 void closeFiles();
 void openSerial();
 void readConfigFile();
@@ -132,6 +133,7 @@ void handleOptions()
         {
         case 0:
             closeFiles();
+            closePorts();
             _exit(0);
         case 1:
             openSerial();
