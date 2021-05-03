@@ -91,6 +91,7 @@ int main()
     signal(SIGUSR2, changeRealTime);
     signal(SIGINT, stopRealTime);
 
+    concentrador_id = 1;
     configuredPorts = 0;
     serverPid = getpid();
 
@@ -137,8 +138,10 @@ void handleOptions()
             closePorts();
             _exit(0);
         case 1:
+            mkfifo(FIFO, 0755);
             openSerial();
             handleBegin(bufWrite, bufRead);
+            openServer();
             break;
         case 2:
             if (handleChangeStatus(bufWrite))

@@ -68,6 +68,22 @@ void openFiles()
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
+void openServer(){
+    pid_t pid = fork();
+    if(pid == 0){
+        int err = execl("out/server.o", "server",NULL);
+        if(err){
+            _exit(1);
+        }
+    }
+    sleep(3);
+    int fd = open(FIFO, O_WRONLY, 0666);
+    char aux[2];
+    sprintf(aux, "%d", concentrador_id);
+    write(fd, aux, strlen(aux));
+    close(fd);
+}
+
 /*
 * function to open the config file declarated portSerial to receive
 * data from arduino

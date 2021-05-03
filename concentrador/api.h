@@ -1,5 +1,6 @@
 #define CONFIG_FILE "../env/config.txt"
 #define MENU_FILE "../env/menu.txt"
+#define FIFO "FIFO"
 #define SIZE0 32
 #define SIZE1 256
 #define SIZE2 512
@@ -37,7 +38,7 @@ int fdLogs, fdErrors, fdData;
 int configuredPorts;
 
 //real time
-int serverPid, udp_pid;
+int serverPid, concentrador_id;
 
 //estruturas para conversao de bytes
 typedef union
