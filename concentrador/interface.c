@@ -70,6 +70,7 @@ void changeRealTime(int sig)
         sonConfig.realtime = 0;
     else
         sonConfig.realtime = 1;
+
 }
 
 /**

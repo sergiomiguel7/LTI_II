@@ -171,6 +171,7 @@ void receiveData(char *readBuf)
         if (sonConfig.opened)
         {
             readed = RS232_PollComport(sonConfig.serialNumber, readBuf, SIZE_DATA);
+            
 
             if (readed > 0)
             {
