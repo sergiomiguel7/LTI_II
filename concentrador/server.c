@@ -14,9 +14,7 @@
 #define PORT_TCP    7778
 #define MAXLINE 1024
 #define MAX 80
-struct sockaddr_in cliaddr_TCP;
-struct sockaddr_in servaddr_UDP;
-struct sockadrr_in cli;
+struct sockaddr_in cliaddr_TCP, servaddr_UDP;
 
 void func(int sockfd_TCP, int sockfd_UDP);
   
