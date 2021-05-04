@@ -15,19 +15,19 @@
 #define MAXLINE 1024
 #define MAX 127
 
-struct threadParam {
-    int sockfd, fd;
 
-};
+int fd;
 
 void *func(void* arg);
 
 int main()
 {
-    int sockfd, connfd, len;
+    int sockfd, connfd,client_sock, len;
     struct sockaddr_in servaddr, cli;
+    pthread_t tid;
 
-    int fd = open("../db/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+
+    fd = open("../db/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -64,35 +64,33 @@ int main()
     else
         printf("Server listening..\n");
 
-    len = sizeof(cli);
+    len = sizeof(struct sockaddr);
 
     // Accept the data packet from client and verification
-    while (1)
+    while ((client_sock = accept(sockfd, (SA *)&cli, &len)))
     {
-        pthread_t tid;
-        connfd = accept(sockfd, (SA *)&cli, &len);
-
-        if (connfd < 0)
+        if (client_sock < 0)
         {
             printf("server acccept failed...\n");
         }
         else
             printf("server acccept the client...\n");
-        struct threadParam param;
-        param.fd=fd;
-        param.sockfd=sockfd;
-        pthread_create(&tid,NULL,func,&param);
+
+        if(pthread_create(&tid,NULL,func,(void*)&client_sock))
+        {
+            perror("not created");
+            return 1;
+        }
     }
 
-
     // After chatting close the socket
-    close(sockfd);
     close(fd);
 }
 
 void *func(void* arg)
 {
-    struct threadParam *param= arg;
+    int sock = *(int*) arg;
+    int readSize = 0;
     char buff[MAX];
     char aux[MAX];
 
@@ -102,20 +100,26 @@ void *func(void* arg)
         bzero(aux, MAX);
 
         // read the message from client and copy it in buffer
-        read(param->sockfd, buff, sizeof(buff));
+        while((readSize = recv(sock, buff, sizeof(buff), 0)) > 0){
+            buff[readSize] = '\0';
+            printf("%s\n ", buff);
+            sprintf(aux, "%s\n", buff);
+            write(fd, aux, strlen(aux));
+        }
 
-        // print from  the client's buffer contents
-        printf("%s\n ", buff);
-
-        //writing the content recieved from the client to the database file
-        sprintf(aux, "%s\n", buff);
-        write(param->fd, aux, strlen(aux));
+        if(readSize == 0){
+            printf("Client disconnect\n");
+            fflush(stdout);
+        }else if(readSize == -1){
+            perror("recv failed");
+        }
+        return 0;
 
         // if msg contains "Exit" then server exit and chat ended(needs to change)
-        if (strncmp("exit", buff, 4) == 0)
+        /* if (strncmp("exit", buff, 4) == 0)
         {
             printf("Server Exit...\n");
             break;
-        }
+        } */
     }
 }

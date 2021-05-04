@@ -49,7 +49,6 @@ int main() {
             sizeof(servaddr_UDP)) < 0 )
     {
         perror("bind failed");
-        exit(EXIT_FAILURE);
     }
       
 
