@@ -1,1 +1,3 @@
-concentrador/out/*.o
+out/*.o
+backend/node_modules/*
+db/*
