@@ -17,6 +17,5 @@
 
 ### Concentrador
 
-- cd to concentrador folder
-- run the command **make**
+- run the command **make** on the root
 - open other terminal in the same directory and run the command **make run**
