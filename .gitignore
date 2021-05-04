@@ -1,3 +1,3 @@
-out/*.o
+out/*.out
 backend/node_modules/*
 db/*
