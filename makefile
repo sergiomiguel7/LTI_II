@@ -5,10 +5,10 @@ all: compile run
 
 compile: 
 	mkdir -p out
-	$(CC) concentrador/interface.c concentrador/communication.c concentrador/utils.c concentrador/rs232/rs232.c -lm -o out/interface.o
-	$(CC) concentrador/server.c -o out/server.o
-	$(CC) sensors/udp_client.c -o out/udp_client.o
-	$(CC) gestor/gestor.c -o out/gestor.o
+	$(CC) concentrador/interface.c concentrador/communication.c concentrador/utils.c concentrador/rs232/rs232.c -lm -o out/interface.out
+	$(CC) concentrador/server.c -o out/server.out
+	$(CC) sensors/udp_client.c -o out/udp_client.out
+	$(CC) gestor/gestor.c -o out/gestor.out
 config: 
 	sh scripts/connection2.sh
 	sleep 2
