@@ -31,27 +31,48 @@ int openFile()
 
 void handleData(int fd)
 {
-    int n;
+    int n, written = 0, prevLine = 0, skip = 0;
     char buf[1024];
+    char line[1024];
     while ((n = read(fd, buf, sizeof(buf))) > 0)
     {
         char *token = strtok(buf, "\n");
         while (token != NULL)
         {
-            sendto(sockfd, token, strlen(token),
-                   MSG_CONFIRM, (const struct sockaddr *)&servaddr,
-                   sizeof(servaddr));
-            printf("Hello message sent.\n");
-            sleep(2);
+            strcpy(line, token);
+            prevLine = strlen(line); //last line size
+            written += prevLine;     //total writed on socket
+            if ((written + prevLine) < 1024)
+            {
+                if (skip == 0 || skip == 3)
+                {
+                    skip = 0;
+                    sendto(sockfd, line, strlen(line),
+                           MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                           sizeof(servaddr));
+                    printf("enviei\n");
+                    sleep(1);
+                }
+                else
+                    skip++;
+            }
+            else
+            {
+                prevLine = 0;
+                written = 0;
+                skip = 1;
+            }
+            memset(line, 0, strlen(line));
             token = strtok(NULL, "\n");
         }
+        memset(buf, 0, strlen(buf));
     }
 }
 
 // Driver code
 int main()
 {
-    
+
     char buffer[MAXLINE];
     int fd = openFile();
 

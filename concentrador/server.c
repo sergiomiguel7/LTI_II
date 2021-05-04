@@ -49,17 +49,6 @@ int main() {
         exit(EXIT_FAILURE);
     }
       
-    int len, n;
-  
-    len = sizeof(servaddr_UDP);  //len is value/resuslt
-  
-    n = recvfrom(sockfd_UDP, (char *)buffer, MAXLINE, 
-                MSG_WAITALL, ( struct sockaddr *) &cliaddr_TCP,
-                &len);
-    buffer[n] = '\0';
-    printf("Client : %s\n", buffer);
-    memset(message, 0, sizeof message);
-    sprintf(message,"1;%s",buffer);        //print ID do concentrador
 
     //escrever TCP a message
     // socket create and varification
@@ -97,23 +86,21 @@ int main() {
 void func(int sockfd_TCP, int sockfd_UDP)
 {
     char buff[MAX];
-    int n;
+    char message[MAX];
     // infinite loop for chat
     for (;;) {
         bzero(buff, MAX);
+        bzero(message, MAX);
   
         // read the message from client and copy it in buffer
         read(sockfd_UDP, buff, sizeof(buff));
+        sprintf(message,"1;%s",buff);
         // print buffer which contains the UDP Server
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, MAX);
-        n = 0;
+        printf("To server: %s\n", message);
         // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
   
         // and send that buffer to TCP Server
-        write(sockfd_TCP, buff, sizeof(buff));
+        write(sockfd_TCP, message, strlen(message));
   
         // if msg contains "Exit" then server exit and chat ended.
         if (strncmp("exit", buff, 4) == 0) {

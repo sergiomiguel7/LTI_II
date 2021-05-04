@@ -5,35 +5,30 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "api.h"  
 #define SA struct sockaddr
 #define PORT_TCP    7778
 #define MAXLINE 1024
-#define MAX 80
+#define MAX 127
 
-void func(int sockfd)
+void func(int sockfd, int fd)
 {
     char buff[MAX];
+    char aux[MAX];
     int n;
     // infinite loop for chat
     for (;;) {
         bzero(buff, MAX);
-  
+        bzero(aux, MAX);
         // read the message from client and copy it in buffer
         read(sockfd, buff, sizeof(buff));
         // print buffer which contains the client contents
-        printf("From client: %s\t To client : ", buff);
-        bzero(buff, MAX);
-        n = 0;
-        // copy server message in the buffer
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-  
-        // and send that buffer to client
-        write(sockfd, buff, sizeof(buff));
+        printf("From client: %s\n ", buff);
+        sprintf(aux, "%s\n",buff);
+        write(fd, aux, strlen(aux));
   
         // if msg contains "Exit" then server exit and chat ended.
         if (strncmp("exit", buff, 4) == 0) {
@@ -48,6 +43,7 @@ int main()
 {
     int sockfd, connfd, len;
     struct sockaddr_in servaddr, cli;
+    int fd = open("../db/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
   
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -91,8 +87,9 @@ int main()
         printf("server acccept the client...\n");
   
     // Function for chatting between client and server
-    func(connfd);
+    func(connfd, fd);
   
     // After chatting close the socket
     close(sockfd);
+    close(fd);
 }
