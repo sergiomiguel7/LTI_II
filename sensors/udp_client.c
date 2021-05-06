@@ -14,6 +14,7 @@
 #define PORT_UDP 7777
 #define PORT_TCP 7778
 #define MAXLINE 1024
+
 int sockfd;
 struct sockaddr_in servaddr;
 

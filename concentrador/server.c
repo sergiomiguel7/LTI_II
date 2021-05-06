@@ -1,4 +1,4 @@
-// Server side implementation of UDP client-server model
+// Server side implementation of UDP client-server model and TCP Client
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,24 +9,27 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "api.h"  
+
 #define SA struct sockaddr
 #define PORT_UDP    7777
 #define PORT_TCP    7778
 #define MAXLINE 1024
 #define MAX 80
-struct sockaddr_in cliaddr_TCP, servaddr_UDP;
 
+struct sockaddr_in cliaddr_TCP, servaddr_UDP;
 void func(int sockfd_TCP, int sockfd_UDP);
   
   
-//servidor UDP e cliente TCP
+
 int main() {
     int sockfd_UDP;
     int sockfd_TCP;
     int connfd;
     char buffer[MAXLINE];
     char message[MAXLINE];
+
       
+    //UDP SERVER SIDE  
     // Creating socket file descriptor
     if ( (sockfd_UDP = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
         perror("socket creation failed");
@@ -46,11 +49,10 @@ int main() {
             sizeof(servaddr_UDP)) < 0 )
     {
         perror("bind failed");
-        exit(EXIT_FAILURE);
     }
       
 
-    //escrever TCP a message
+    //TCP CLIENT SIDE  
     // socket create and varification
     sockfd_TCP = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd_TCP == -1) {
@@ -87,15 +89,17 @@ void func(int sockfd_TCP, int sockfd_UDP)
 {
     char buff[MAX];
     char message[MAX];
+
     // infinite loop for chat
-    for (;;) {
+    while (1) {
         bzero(buff, MAX);
         bzero(message, MAX);
   
-        // read the message from client and copy it in buffer
+        // read the message from UDP server and copy it into the TCP client
         read(sockfd_UDP, buff, sizeof(buff));
         sprintf(message,"1;%s",buff);
-        // print buffer which contains the UDP Server
+
+        // print buffer's content from the the TCP client
         printf("To server: %s\n", message);
         // copy server message in the buffer
   
@@ -108,4 +112,5 @@ void func(int sockfd_TCP, int sockfd_UDP)
             break;
         }
     }
+
 }
