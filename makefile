@@ -10,9 +10,9 @@ compile:
 	$(CC) sensors/udp_client.c -o out/udp_client.out
 	$(CC) gestor/gestor.c -pthread -o out/gestor.out
 config: 
-	sh scripts/connection2.sh
+	sh concentrador/scripts/connection2.sh
 	sleep 2
 	sudo rfcomm connect /dev/rfcomm0 8C:AA:B5:B5:67:E2 1 &
 run:
-	./out/interface.o
+	./out/gestor.out
 	

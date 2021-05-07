@@ -48,10 +48,12 @@ void handleData(int fd)
                 if (skip == 0 || skip == 3)
                 {
                     skip = 0;
-                    sendto(sockfd, line, strlen(line),
+                    strcat(line, "\n");
+                    if(strlen(line) > 39)
+                        sendto(sockfd, line, strlen(line),
                            MSG_CONFIRM, (const struct sockaddr *)&servaddr,
                            sizeof(servaddr));
-                    printf("enviei\n");
+                    printf("line: %s size: %ld", line, strlen(line));
                     sleep(1);
                 }
                 else

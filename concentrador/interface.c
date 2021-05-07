@@ -139,7 +139,6 @@ void handleOptions()
             closePorts();
             _exit(0);
         case 1:
-            mkfifo(FIFO, 0755);
             openSerial();
             handleBegin(bufWrite, bufRead);
             openServer();

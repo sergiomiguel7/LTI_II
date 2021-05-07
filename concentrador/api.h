@@ -14,6 +14,7 @@
 #define DATA2 4
 #define LED 5
 #define BAD_VALUE_ERR 3
+#define PORT_UDP 7777
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -28,8 +29,10 @@ uint32_t join32(char *buffer);
 void splitFloat(char *buffer, float value);
 float joinFloat(char *bufffer);
 long transform_data(char *date, char *hour);
-int checkValue(char type, float value, uint32_t timestamp);
+int checkValue(char type, float value, uint32_t timestamp, int socketFd, int opened);
 
+//pid server
+int pidServer;
 
 //ficheiros
 int fdLogs, fdErrors, fdData;

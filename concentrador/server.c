@@ -8,13 +8,12 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "api.h"  
 
 #define SA struct sockaddr
 #define PORT_UDP    7777
 #define PORT_TCP    7778
 #define MAXLINE 1024
-#define MAX 80
+#define MAX 128
 
 struct sockaddr_in cliaddr_TCP, servaddr_UDP;
 void func(int sockfd_TCP, int sockfd_UDP);
@@ -48,7 +47,8 @@ int main() {
     if ( bind(sockfd_UDP, (const struct sockaddr *)&servaddr_UDP, 
             sizeof(servaddr_UDP)) < 0 )
     {
-        perror("bind failed");
+        perror("bind failed on server");
+        _exit(1);
     }
       
 
@@ -56,11 +56,11 @@ int main() {
     // socket create and varification
     sockfd_TCP = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd_TCP == -1) {
-        printf("socket creation failed...\n");
+        printf("socket tcp creation failed...\n");
         exit(0);
     }
     else
-        printf("Socket successfully created..\n");
+        printf("Socket tcp successfully created..\n");
     bzero(&cliaddr_TCP, sizeof(cliaddr_TCP));
 
     // assign IP, PORT
@@ -111,6 +111,7 @@ void func(int sockfd_TCP, int sockfd_UDP)
             printf("Server Exit...\n");
             break;
         }
+        usleep(100000);
     }
 
 }

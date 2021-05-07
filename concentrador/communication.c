@@ -7,9 +7,17 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include "rs232/rs232.h"
 #include "api.h"
+
+
+//socket udp
+struct sockaddr_in servaddr;
+
 
 void receiveData(char *readBuf);
 
@@ -68,20 +76,19 @@ void openFiles()
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
-void openServer(){
+void openServer()
+{
     pid_t pid = fork();
-    if(pid == 0){
-        int err = execl("out/server.o", "server",NULL);
-        if(err){
+    pidServer = pid;
+    if (pid == 0)
+    {
+        int err = execl("server.out", "server", NULL);
+        if (err)
+        {
+            perror("exec err");
             _exit(1);
         }
     }
-    sleep(3);
-    int fd = open(FIFO, O_WRONLY, 0666);
-    char aux[2];
-    sprintf(aux, "%d", concentrador_id);
-    write(fd, aux, strlen(aux));
-    close(fd);
 }
 
 /*
@@ -92,7 +99,6 @@ void openSerial()
 {
     for (int i = 0; i < configuredPorts; i++)
     {
-
         actualConfig[i].led_status = 0;
         actualConfig[i].pid = 0;
         actualConfig[i].opened = 1;
@@ -116,6 +122,7 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
+    kill(serverPid, SIGKILL);
 }
 
 void closePorts()
@@ -180,14 +187,27 @@ void sendPacket()
  **/
 void receiveData(char *readBuf)
 {
-    int readed = 0;
+    int readed = 0, sockfd, socketOpened = 1;
     char entry[SIZE_DATA];
+    
+    // Creating socket file descriptor
+    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    {
+        perror("socket creation failed");
+        socketOpened = 0;
+    }
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling server information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT_UDP);
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+
     while (1)
     {
         if (sonConfig.opened)
         {
             readed = RS232_PollComport(sonConfig.serialNumber, readBuf, SIZE_DATA);
-            
 
             if (readed > 0)
             {
@@ -204,6 +224,12 @@ void receiveData(char *readBuf)
                         sprintf(entry, "%u;%s;%s;%u;%u;\n",
                                 sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, type);
                         write(fdErrors, entry, sizeof(entry));
+                        if (socketOpened == 1)
+                        {
+                            sendto(sockfd, entry, strlen(entry),
+                                   MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                                   sizeof(servaddr));
+                        }
                         if (sonConfig.realtime)
                             write(1, entry, strlen(entry));
                     }
@@ -227,12 +253,18 @@ void receiveData(char *readBuf)
 
                                 float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
-                                if (checkValue('v', voltage, timestamp))
+                                if (checkValue('v', voltage, timestamp, sockfd, socketOpened))
                                 {
                                     //TODO: remove converted from sprintf
                                     sprintf(entry, "%u;%s;%s;%u;%c;%f;\n",
                                             sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, lux);
                                     int n = write(fdData, entry, strlen(entry));
+                                    if (socketOpened == 1)
+                                    {
+                                        sendto(sockfd, entry, strlen(entry),
+                                               MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                                               sizeof(servaddr));
+                                    }
                                     if (sonConfig.realtime)
                                         write(1, entry, strlen(entry));
                                 }
@@ -242,7 +274,7 @@ void receiveData(char *readBuf)
                         {
                             char state[12];
                             uint8_t value = readBuf[7];
-                            if (checkValue('s', value, timestamp))
+                            if (checkValue('s', value, timestamp, sockfd, socketOpened))
                             {
                                 sonConfig.led_status = value;
                                 if (value)
@@ -253,6 +285,12 @@ void receiveData(char *readBuf)
                                 sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
                                         sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, (char)type, state);
                                 int n = write(fdData, entry, strlen(entry));
+                                if (socketOpened == 1)
+                                {
+                                    sendto(sockfd, entry, strlen(entry),
+                                           MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+                                           sizeof(servaddr));
+                                }
                                 if (sonConfig.realtime)
                                     write(1, entry, strlen(entry));
                             }
@@ -273,7 +311,11 @@ void receiveData(char *readBuf)
     }
 }
 
-int checkValue(char type, float value, uint32_t timestamp)
+void writeServer(char *message, int size)
+{
+}
+
+int checkValue(char type, float value, uint32_t timestamp, int socketFd, int opened)
 {
 
     if (type == 'v')
@@ -293,6 +335,12 @@ int checkValue(char type, float value, uint32_t timestamp)
     sprintf(entry, "%u;%s;%s;%u;%u;\n",
             sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, BAD_VALUE_ERR);
     write(fdErrors, entry, sizeof(entry));
+    if (opened == 1)
+    {
+        sendto(socketFd, entry, strlen(entry),
+               MSG_CONFIRM, (const struct sockaddr *)&servaddr,
+               sizeof(servaddr));
+    }
 
     return 0;
 }

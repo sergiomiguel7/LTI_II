@@ -13,19 +13,17 @@
 #define SA struct sockaddr
 #define PORT_TCP 7778
 #define MAXLINE 1024
-#define MAX 127
-
+#define MAX 128
 
 int fd;
 
-void *func(void* arg);
+void *func(void *arg);
 
 int main()
 {
-    int sockfd, connfd,client_sock, len;
+    int sockfd, connfd, client_sock, len;
     struct sockaddr_in servaddr, cli;
     pthread_t tid;
-
 
     fd = open("../db/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 
@@ -76,7 +74,7 @@ int main()
         else
             printf("server acccept the client...\n");
 
-        if(pthread_create(&tid,NULL,func,(void*)&client_sock))
+        if (pthread_create(&tid, NULL, func, (void *)&client_sock))
         {
             perror("not created");
             return 1;
@@ -87,30 +85,30 @@ int main()
     close(fd);
 }
 
-void *func(void* arg)
+void *func(void *arg)
 {
-    int sock = *(int*) arg;
+    int sock = *(int *)arg;
     int readSize = 0;
     char buff[MAX];
-    char aux[MAX];
 
     while (1)
     {
-        bzero(buff, MAX);
-        bzero(aux, MAX);
 
         // read the message from client and copy it in buffer
-        while((readSize = recv(sock, buff, sizeof(buff), 0)) > 0){
-            buff[readSize] = '\0';
-            printf("%s\n ", buff);
-            sprintf(aux, "%s\n", buff);
-            write(fd, aux, strlen(aux));
+        while ((readSize = recv(sock, buff, sizeof(buff), 0)) > 0)
+        {
+            printf("%s", buff);
+            write(fd, buff, strlen(buff));
+            bzero(buff, MAX);
         }
 
-        if(readSize == 0){
+        if (readSize == 0)
+        {
             printf("Client disconnect\n");
             fflush(stdout);
-        }else if(readSize == -1){
+        }
+        else if (readSize == -1)
+        {
             perror("recv failed");
         }
         return 0;
