@@ -39,7 +39,7 @@ int main() {
     //UDP SERVER SIDE  
     // Creating socket file descriptor
     if ( (sockfd_UDP = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        perror("socket creation failed");
+        perror("\nsocket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -55,7 +55,7 @@ int main() {
     if ( bind(sockfd_UDP, (const struct sockaddr *)&servaddr_UDP, 
             sizeof(servaddr_UDP)) < 0 )
     {
-        perror("bind failed on server");
+        perror("\nbind failed on server");
         _exit(1);
     }
       
@@ -64,11 +64,10 @@ int main() {
     // socket create and varification
     sockfd_TCP = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd_TCP == -1) {
-        printf("socket tcp creation failed...\n");
+        printf("\nsocket tcp creation failed...");
         exit(0);
     }
-    else
-        printf("Socket tcp successfully created..\n");
+
     bzero(&cliaddr_TCP, sizeof(cliaddr_TCP));
 
     // assign IP, PORT
@@ -81,8 +80,6 @@ int main() {
         printf("connection with the server failed...\n");
         exit(0);
     }
-    else
-        printf("connected to the server..\n");
   
     // function for chat
     func(sockfd_TCP, sockfd_UDP);
@@ -120,7 +117,7 @@ void func(int sockfd_TCP, int sockfd_UDP)
         sprintf(message,"%s;%s",IPbuffer,buff);
 
         // print buffer's content from the the TCP client
-        printf("To server: %s\n", message);
+        //printf("To server: %s\n", message);
         // copy server message in the buffer
   
         // and send that buffer to TCP Server

@@ -14,10 +14,8 @@
 #include "rs232/rs232.h"
 #include "api.h"
 
-
 //socket udp
 struct sockaddr_in servaddr;
-
 
 void receiveData(char *readBuf);
 
@@ -79,7 +77,7 @@ void openFiles()
 void openServer()
 {
     pid_t pid = fork();
-    pidServer = pid;
+    udpServer = pid;
     if (pid == 0)
     {
         int err = execl("server.out", "server", NULL);
@@ -122,11 +120,11 @@ void closeFiles()
     close(fdLogs);
     close(fdErrors);
     close(fdData);
-    kill(serverPid, SIGKILL);
 }
 
 void closePorts()
 {
+    kill(udpServer, SIGINT);
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -189,7 +187,7 @@ void receiveData(char *readBuf)
 {
     int readed = 0, sockfd, socketOpened = 1;
     char entry[SIZE_DATA];
-    
+
     // Creating socket file descriptor
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {

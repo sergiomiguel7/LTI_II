@@ -137,6 +137,7 @@ void handleOptions()
         case 0:
             closeFiles();
             closePorts();
+            sleep(2);
             _exit(0);
         case 1:
             openSerial();

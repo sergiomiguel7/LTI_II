@@ -32,7 +32,7 @@ long transform_data(char *date, char *hour);
 int checkValue(char type, float value, uint32_t timestamp, int socketFd, int opened);
 
 //pid server
-int pidServer;
+int udpServer;
 
 //ficheiros
 int fdLogs, fdErrors, fdData;
