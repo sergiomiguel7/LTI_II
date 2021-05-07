@@ -17,6 +17,14 @@
 
 struct sockaddr_in cliaddr_TCP, servaddr_UDP;
 void func(int sockfd_TCP, int sockfd_UDP);
+void checkHostName(int hostname);
+void checkHostEntry(struct hostent * hostentry);
+void checkIPbuffer(char *IPbuffer);
+
+char hostbuffer[256];
+char *IPbuffer;
+struct hostent *host_entry;
+int hostname;
   
   
 
@@ -90,6 +98,18 @@ void func(int sockfd_TCP, int sockfd_UDP)
     char buff[MAX];
     char message[MAX];
 
+     // To retrieve hostname
+    hostname = gethostname(hostbuffer, sizeof(hostbuffer));
+    checkHostName(hostname);
+  
+    // To retrieve host information
+    host_entry = gethostbyname(hostbuffer);
+    checkHostEntry(host_entry);
+  
+    // To convert an Internet network
+    // address into ASCII string
+    IPbuffer = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+    
     // infinite loop for chat
     while (1) {
         bzero(buff, MAX);
@@ -97,7 +117,7 @@ void func(int sockfd_TCP, int sockfd_UDP)
   
         // read the message from UDP server and copy it into the TCP client
         read(sockfd_UDP, buff, sizeof(buff));
-        sprintf(message,"1;%s",buff);
+        sprintf(message,"%s;%s",IPbuffer,buff);
 
         // print buffer's content from the the TCP client
         printf("To server: %s\n", message);
@@ -114,4 +134,35 @@ void func(int sockfd_TCP, int sockfd_UDP)
         usleep(100000);
     }
 
+}
+
+// Returns hostname for the local computer
+void checkHostName(int hostname)
+{
+    if (hostname == -1)
+    {
+        perror("gethostname");
+        exit(1);
+    }
+}
+  
+// Returns host information corresponding to host name
+void checkHostEntry(struct hostent * hostentry)
+{
+    if (hostentry == NULL)
+    {
+        perror("gethostbyname");
+        exit(1);
+    }
+}
+  
+// Converts space-delimited IPv4 addresses
+// to dotted-decimal format
+void checkIPbuffer(char *IPbuffer)
+{
+    if (NULL == IPbuffer)
+    {
+        perror("inet_ntoa");
+        exit(1);
+    }
 }
