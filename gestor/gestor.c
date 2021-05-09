@@ -6,10 +6,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include "../concentrador/server_api.h"
 #define SA struct sockaddr
 #define PORT_TCP 7778
 #define MAXLINE 1024
@@ -89,6 +91,7 @@ void *func(void *arg)
 {
     int sock = *(int *)arg;
     int readSize = 0;
+    int started = 0;
     char buff[MAX];
 
     while (1)
@@ -97,7 +100,28 @@ void *func(void *arg)
         // read the message from client and copy it in buffer
         while ((readSize = recv(sock, buff, sizeof(buff), 0)) > 0)
         {
-            printf("%s", buff);
+            if (started == 0)
+            {
+                char password[8];
+                strncpy(password, &buff[2], 7);
+                password[7] = '\0';
+                started = 1;
+                if (strncmp(password, "G1MIETI", 7) == 0)
+                {
+                    send(sock, "ok", 3, 0);
+                }
+                else
+                {
+                    char error[3];
+                    error[0] = END_TCP;
+                    error[1] = AUTH_FAIL;
+                    error[2] = '\0';
+                    send(sock, error, 3, 0);
+                    shutdown(sock, SHUT_RDWR);
+                    return 0;
+                }
+                bzero(buff, MAX);
+            }
             write(fd, buff, strlen(buff));
             bzero(buff, MAX);
         }

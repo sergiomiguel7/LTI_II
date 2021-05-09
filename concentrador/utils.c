@@ -10,6 +10,7 @@
 #include <time.h>
 #include "rs232/rs232.h"
 #include "api.h"
+#include "server_api.h"
 
 uint32_t current_timestamp()
 {

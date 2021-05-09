@@ -4,6 +4,7 @@
         "cmath": "c",
         "*.tcc": "c",
         "assert.h": "c",
-        "signal.h": "c"
+        "signal.h": "c",
+        "server_api.h": "c"
     }
 }
