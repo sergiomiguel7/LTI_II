@@ -76,11 +76,15 @@ void openFiles()
 
 void openServer()
 {
+    char area[12];
+    printf("Área associada ao concentrador: ");
+    scanf("%s", area);
     pid_t pid = fork();
     udpServer = pid;
+
     if (pid == 0)
     {
-        int err = execl("server.out", "server", NULL);
+        int err = execl("server.out", "server", area, NULL);
         if (err)
         {
             perror("exec err");

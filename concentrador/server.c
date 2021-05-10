@@ -15,11 +15,13 @@ void func(int sockfd_TCP, int sockfd_UDP);
 
 char hostbuffer[256];
 char *IPbuffer;
+char area[12];
 struct hostent *host_entry;
 int hostname;
 
-int main()
+int main(int argc, char* argv[])
 {
+    strcpy(area, argv[1]);
     int sockfd_UDP;
     int sockfd_TCP;
     int connfd;
@@ -103,13 +105,13 @@ void func(int sockfd_TCP, int sockfd_UDP)
     {
         if (buff[0] == END_TCP)
         {
-            write(1, "auth failed\n", 14);
+            write(1, "\nauth failed\n", 14);
             _exit(1);
         }
 
         if (strncmp(buff, "ok", 2) == 0)
         {
-            write(1, "auth granted\n", 14);
+            write(1, "\nauth granted\n", 14);
             break;
         }
     }
@@ -122,7 +124,7 @@ void func(int sockfd_TCP, int sockfd_UDP)
 
         // read the message from UDP server and copy it into the TCP client
         read(sockfd_UDP, buff, sizeof(buff));
-        sprintf(message, "%d;%s",ID, buff);
+        sprintf(message, "%s;%d;%s",area,ID, buff);
 
         // and send that buffer to TCP Server
         write(sockfd_TCP, message, strlen(message));
