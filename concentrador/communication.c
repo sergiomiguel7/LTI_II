@@ -79,12 +79,15 @@ void openServer()
     char area[12];
     printf("Área associada ao concentrador: ");
     scanf("%s", area);
+    char id[2];
+    printf("ID concentrador: ");
+    scanf("%s", id);
     pid_t pid = fork();
     udpServer = pid;
 
     if (pid == 0)
     {
-        int err = execl("server.out", "server", area, NULL);
+        int err = execl("server.out", "server", area, id, NULL);
         if (err)
         {
             perror("exec err");

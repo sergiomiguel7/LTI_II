@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { Chart } from 'chart.js';
 import * as moment from 'moment';
 
@@ -53,11 +53,11 @@ export class DataVisualComponent implements OnInit {
         dataSet.push(el.value);
 
         //table
-        tableData.push({ 
+        tableData.push({
           date: date,
           value: el.value,
           area: el.areaConcentrador,
-          id: el.idConcentrador 
+          id: el.idConcentrador
         });
       });
 
@@ -96,6 +96,14 @@ export class DataVisualComponent implements OnInit {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+              suggestedMax: 3
+            }
+          }]
+        },
         plugins: {
           datalabels: {
             display: false

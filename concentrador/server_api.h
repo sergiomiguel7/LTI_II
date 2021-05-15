@@ -8,7 +8,6 @@
 #define DATA_TCP 3
 #define ERRO_TCP 4
 #define END_TCP 5
-#define ID 1
 #define AUTH_FAIL 1
 
 #include<stdint.h>

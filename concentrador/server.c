@@ -18,10 +18,13 @@ char *IPbuffer;
 char area[12];
 struct hostent *host_entry;
 int hostname;
+int ID;
 
 int main(int argc, char* argv[])
 {
+
     strcpy(area, argv[1]);
+    ID = atoi(argv[2]);
     int sockfd_UDP;
     int sockfd_TCP;
     int connfd;
