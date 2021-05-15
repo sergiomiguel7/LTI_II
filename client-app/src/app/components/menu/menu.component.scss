@@ -1,0 +1,33 @@
+header{
+    display: flex;
+    height: 50px;
+    overflow: hidden;
+    width: 100%;
+    background-color: cornflowerblue;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+
+    .wrapper{
+        width: 100%;
+        margin: 5px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        .title{
+            font-size: 28px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .menu{
+            .sub{
+                color: white;
+                font-size: 20px;
+            }
+        }
+    }
+}
