@@ -21,15 +21,25 @@
             <canvas id="myChart" width="400" height="400"></canvas>
         </div>
 
-        <table [ngStyle]="{'display': showTable ? '' : 'none'}" mat-table [dataSource]="tableData" class="grow">
+        <table [ngStyle]="{'display': showTable ? '' : 'none'}" mat-table [dataSource]="tableData" class="grow" matSort>
 
             <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef> Data </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Data </th>
                 <td mat-cell *matCellDef="let element"> {{element.date}} </td>
             </ng-container>
 
+            <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> ID Concentrador </th>
+                <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="area">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Área Concentrador </th>
+                <td mat-cell *matCellDef="let element"> {{element.area}} </td>
+            </ng-container>
+
             <ng-container matColumnDef="value">
-                <th mat-header-cell *matHeaderCellDef> Valor (Lux) </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Valor (Lux) </th>
                 <td mat-cell *matCellDef="let element"> {{element.value}} </td>
             </ng-container>
 

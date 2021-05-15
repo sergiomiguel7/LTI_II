@@ -53,7 +53,7 @@ void handleData(int fd)
                         sendto(sockfd, line, strlen(line),
                            MSG_CONFIRM, (const struct sockaddr *)&servaddr,
                            sizeof(servaddr));
-                    printf("line: %s size: %ld", line, strlen(line));
+                    printf("line: %s", line);
                     sleep(1);
                 }
                 else

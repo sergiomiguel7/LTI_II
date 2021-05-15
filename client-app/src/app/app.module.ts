@@ -8,7 +8,7 @@ import {MatPaginatorModule} from '@angular/material/paginator'
 import {ChartsModule} from 'ng2-charts';
 import {MatTableModule} from '@angular/material/table'
 import {MatSlideToggleModule} from '@angular/material/slide-toggle'
-
+import { MatSortModule } from '@angular/material/sort';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -35,7 +35,8 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
     ChartsModule,
     MatPaginatorModule,
     MatTableModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatSortModule
   ],
   providers: [],
   bootstrap: [AppComponent]

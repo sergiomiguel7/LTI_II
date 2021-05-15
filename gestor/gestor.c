@@ -27,7 +27,11 @@ int main()
     struct sockaddr_in servaddr, cli;
     pthread_t tid;
 
-    fd = open("../db/data.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fd = open("/home/sergio/Documentos/LTI_II/db/data.txt",  O_CREAT | O_RDWR | O_APPEND, 0666);
+
+    if(fd < 0){
+        perror("opening file error");
+    }
 
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import {MatSort} from '@angular/material/sort';
+import {MatTableDataSource} from '@angular/material/table';
 import { Chart } from 'chart.js';
 import * as moment from 'moment';
 
@@ -11,11 +12,14 @@ import * as moment from 'moment';
 })
 export class DataVisualComponent implements OnInit {
 
+  @ViewChild(MatSort, { static: false }) sort: MatSort | undefined;
+
+
   totalValues: number = 0;
   limit: number = 10;
   page: number = 1;
   pageSizeOptions: number[] = [10, 25, 50];
-  displayedColumns: string[] = ['date', 'value'];
+  displayedColumns: string[] = ['date', 'id', 'area', 'value'];
 
   chartData: any;
   tableData: any = [];
@@ -37,8 +41,6 @@ export class DataVisualComponent implements OnInit {
     let limit = event ? event.pageSize : this.limit;
 
     this.http.get(`http://localhost:5000/api/values?page=${page}&limit=${limit}`).subscribe((data: any) => {
-      console.log("data", data);
-
       let tableData = [] as any;
       this.totalValues = data.storedValues;
       let labels: any[] = [];
@@ -51,7 +53,12 @@ export class DataVisualComponent implements OnInit {
         dataSet.push(el.value);
 
         //table
-        tableData.push({ date: date, value: el.value });
+        tableData.push({ 
+          date: date,
+          value: el.value,
+          area: el.areaConcentrador,
+          id: el.idConcentrador 
+        });
       });
 
       this.chartData = {
@@ -59,7 +66,9 @@ export class DataVisualComponent implements OnInit {
         labels: labels
       }
 
-      this.tableData = tableData;
+      this.tableData = new MatTableDataSource<any>(tableData);
+
+      this.tableData.sort = this.sort;
       this.buildChart();
 
     })
