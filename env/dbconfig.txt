@@ -1,0 +1,34 @@
+DROP DATABASE IF EXISTS sensoresdb;
+CREATE DATABASE sensoresdb;
+USE sensoresdb;
+
+CREATE TABLE user(
+	id int AUTO_INCREMENT PRIMARY KEY,
+	password varchar(25),
+	token varchar(25),
+	role varchar(10),
+	username varchar(50) 
+);
+
+CREATE TABLE concentrador(
+	id int AUTO_INCREMENT PRIMARY KEY,
+	area varchar(25),
+	id_user int,
+	FOREIGN KEY(id_user) REFERENCES user(id)
+);
+
+CREATE TABLE sensor(
+	id int AUTO_INCREMENT PRIMARY KEY,
+	area varchar(25),
+	id_concentrador int,
+	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
+);
+
+CREATE TABLE dado(
+	id int AUTO_INCREMENT PRIMARY KEY,
+	unidade varchar(1),
+	valor float,
+	id_sensor int,
+	timestamp timestamp,
+	FOREIGN KEY(id_sensor) REFERENCES sensor(id) 
+);
