@@ -54,7 +54,7 @@ void handleData(int fd)
                            MSG_CONFIRM, (const struct sockaddr *)&servaddr,
                            sizeof(servaddr));
                     printf("line: %s", line);
-                    sleep(1);
+                    sleep(5);
                 }
                 else
                     skip++;
