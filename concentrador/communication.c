@@ -70,7 +70,7 @@ int buildLedPacket(char *str, uint8_t signal)
 
 void openFiles()
 {
-    fdData = open("log/data.csv", O_RDWR | O_CREAT | O_APPEND, 0666);
+    fdData = open("log/data.csv",  O_CREAT | O_RDWR | O_APPEND, 0666);
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
