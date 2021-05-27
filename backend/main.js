@@ -7,6 +7,7 @@ app.use( express.static( __dirname + '/public' ));
 //middleweares
 require('./middleweares/index.js')(app, express);
 require('./middleweares/router')(app);
+require('./middleweares/auth');
 
 app.use('/', (req, res, next) => {
     res.send({

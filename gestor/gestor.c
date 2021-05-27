@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <mysql/mysql.h>
 #include "../concentrador/server_api.h"
 #define SA struct sockaddr
 #define PORT_TCP 7778
@@ -19,7 +20,9 @@
 
 int fd;
 
+void connectDB();
 void *func(void *arg);
+MYSQL *con;
 
 int main()
 {
@@ -27,9 +30,11 @@ int main()
     struct sockaddr_in servaddr, cli;
     pthread_t tid;
 
-    fd = open("/home/sergio/Documentos/LTI_II/db/data.txt",  O_CREAT | O_RDWR | O_APPEND, 0666);
+    connectDB();
+    fd = open("/home/sergio/Documentos/LTI_II/db/data.txt", O_CREAT | O_RDWR | O_APPEND, 0666);
 
-    if(fd < 0){
+    if (fd < 0)
+    {
         perror("opening file error");
     }
 
@@ -148,4 +153,29 @@ void *func(void *arg)
             break;
         } */
     }
+
+
 }
+
+    //MYSQL OPERATIONS
+    void connectDB()
+    {
+        con = mysql_init(NULL);
+        if (con == NULL)
+        {
+            printf("%s\n", mysql_error(con));
+            exit(1);
+        }
+
+        if (mysql_real_connect(con, "localhost", "root", "Vitoriag7!",
+                               "sensoresdb", 0, NULL, 0) == NULL)
+        {
+            printf("%s\n", mysql_error(con));
+            mysql_close(con);
+            exit(1);
+        } 
+        else{
+            printf("Connected to database\n");
+
+        }
+    }
