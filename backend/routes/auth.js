@@ -9,6 +9,6 @@ router.route('/signup')
     .post([validator.body('username').isString(), validator.body('password').isString()],AuthController.register);
 //login
 router.route('/login')
-    .post([validator.body('username').isString()], AuthController.login);
+    .post([validator.body('username').isString(), validator.body('password').isString()], AuthController.login);
 
 module.exports = router;
