@@ -2,7 +2,6 @@ module.exports = (app, express) => {
     const cors = require('cors');
     const helmet = require('helmet');
     const morgan = require('morgan');
-    require('dotenv').config();
 
     app.use(express.json());
     app.use(express.urlencoded({extended: true}));

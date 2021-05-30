@@ -4,8 +4,8 @@ USE sensoresdb;
 
 CREATE TABLE user(
 	id int AUTO_INCREMENT PRIMARY KEY,
-	password varchar(25),
-	token varchar(25),
+	password varchar(100),
+	token varchar(200),
 	role varchar(10),
 	username varchar(50) 
 );
