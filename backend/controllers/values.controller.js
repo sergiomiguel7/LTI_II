@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 exports.getValues = async (req, res) => {
+    console.log("user", req.user);
     try {
         let counter = 0;
         const data = fs.readFileSync(path.join(__dirname, '../../db/data.txt'), 'utf-8');

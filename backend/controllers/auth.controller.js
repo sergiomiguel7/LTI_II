@@ -57,7 +57,8 @@ register = async (req, res, next) => {
                 bcrypt.hash(req.body.password, 12, (err, hash) => {
                     let newUser = {
                         username: req.body.username,
-                        password: hash
+                        password: hash,
+                        role: 'user'
                     }
                     DataController.getData('INSERT INTO user SET ?', [newUser])
                         .then((rows2) => {
@@ -72,10 +73,38 @@ register = async (req, res, next) => {
         .catch((err) => {
             res.status(401).json({ message: err.message })
         });
+}
+
+checkAuth = (req, res, callback) => {
+    let token = req.get("Authorization");
+    if (!token)  res.status(401).send("Invalid token!");
+
+    let matchTokenUser = token.split(" ");
+
+    DataController.getData("SELECT * FROM user WHERE token = ?", [matchTokenUser[1]])
+        .then((rows) => { 
+            if(rows.length == 0) {
+             return res.status(401).send("Invalid token!");
+            }
+
+            jwt.verify(matchTokenUser[1], process.env.TOKEN_SECRET, (err) => {
+                if (err) return res.status(401).send("Invalid token!");
+                
+                let user = rows[0];
+                delete user.password;
+    
+                req.user = rows[0];
+                return callback();
+            });
+        })
+        .catch((err) => {
+            res.status(401).json({ message: err.message })
+        })
 
 }
 
 module.exports = {
     login,
-    register
+    register,
+    checkAuth
 }
