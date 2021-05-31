@@ -29,6 +29,8 @@ CREATE TABLE dado(
 	unidade varchar(1),
 	valor float,
 	id_sensor int,
+	id_concentrador int,
 	timestamp timestamp,
 	FOREIGN KEY(id_sensor) REFERENCES sensor(id) 
+	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
 );
