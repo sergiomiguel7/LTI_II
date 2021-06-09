@@ -2,6 +2,7 @@
 #include "packets.h"
 #include "api.h"
 #include "math.h"
+#include "EspMQTTClient.h"
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
@@ -36,6 +37,17 @@ bool needBreak = false;
 
 BluetoothSerial SerialBT;
 
+EspMQTTClient client(
+  "NOS-97E0",
+  "6b887270b6c1",
+  "10.0.2.15",  // MQTT Broker server ip
+//  "MQTTUsername",   // Can be omitted if not needed
+//  "MQTTPassword",   // Can be omitted if not needed
+  "room/mov",     // Client name that uniquely identify your device
+  1883              // The MQTT port, default to 1883. this line can be omitted
+);
+
+
 void setup() {
   // put your setup code here, to run once:
 
@@ -47,8 +59,16 @@ void setup() {
 
 }
 
-void loop() {
+void onConnectionEstablished()
+{
+  client.subscribe("room/mov", [](const String & payload) {
+    Serial.println(payload);
+  });
+  client.publish("room/mov", "This is a message from arduino");
+}
 
+void loop() {
+  client.loop();
   if (SerialBT.available()) {
     //ler trama
     SerialBT.readBytes(aux, STARTPACKETSIZE);
@@ -155,8 +175,10 @@ void sensorSystem() {
     led = conditions(led);
 
     if (var == false) {
-      data2Packet(aux, currentTimestamp(), led);
-      SerialBT.write(aux, DATA2PACKETSIZE);
+      /*data2Packet(aux, currentTimestamp(), led); Não envia mais a trama do tipo 2
+      SerialBT.write(aux, DATA2PACKETSIZE);*/ 
+
+      
     }
     var = true;
   }
