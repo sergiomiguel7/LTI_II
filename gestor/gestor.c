@@ -18,9 +18,9 @@
 #define MAXLINE 1024
 #define MAX 128
 
-int fd;
 
 void connectDB();
+void insertDB();
 void *func(void *arg);
 MYSQL *con;
 
@@ -31,12 +31,7 @@ int main()
     pthread_t tid;
 
     connectDB();
-    fd = open("/home/sergio/Documentos/LTI_II/db/data.txt", O_CREAT | O_RDWR | O_APPEND, 0666);
-
-    if (fd < 0)
-    {
-        perror("opening file error");
-    }
+    
 
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -131,7 +126,7 @@ void *func(void *arg)
                 }
                 bzero(buff, MAX);
             }
-            write(fd, buff, strlen(buff));
+            insertDB(buff);
             bzero(buff, MAX);
         }
 
@@ -179,3 +174,46 @@ void *func(void *arg)
 
         }
     }
+
+    void insertDB(char buff)
+    {
+    MYSQL *conn;
+    MYSQL_RES res;
+    MYSQL_ROW row;
+
+    conn = mysql_init(NULL);
+    char buffer [212];
+    int id;
+    char unidade;
+    int valor;
+    int id_sensor;
+    int id_concentrador;
+    uint32_t timestamp;
+
+    while( p!NULL ){
+        id= buff[0];
+        unidade=buff[1];
+        valor=buff[2];
+        id_sensor=buff[3];
+        id_concentrador=buff[4];
+        timestamp=buff[5];
+        memset(buffer,0,212);
+        sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES (%d, '%s', '%d', %d, %d, '%d')",
+             id, unidade, valor, id_sensor, id_concentrador, timestamp);
+    }
+
+    
+    if (mysql_real_connect(conn, "localhost", "root", "Vitoriag7!", "sensoresdb", 0, NULL, 0) == NULL)
+        {
+            printf("%s\n", mysql_error(conn));
+            mysql_close(conn);
+            exit(1);
+        }
+
+    if (mysql_query(conn, comando) != 0){                                                                                                  
+        fprintf(stderr, "Query Failure\n");                                                              
+        exit(0);                                                                            
+    } 
+    mysql_close(conn);    
+    }
+
