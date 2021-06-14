@@ -3,6 +3,8 @@
 #include "api.h"
 #include "math.h"
 #include "EspMQTTClient.h"
+const String TOPICPUB = "room/mov"; // Topic to publish to
+const String TOPICSUB = "room/light/" + String(ISS); // Topic to subcribe to
 
 uint32_t initialTS = 0;
 uint32_t startTS = 0;
@@ -11,6 +13,13 @@ uint8_t aux [24];
 uint8_t dataPacket[128];
 int pos = 0;
 
+EspMQTTClient client(
+  "NOS-97E0",
+  "6b887270b6c1",
+  "192.168.1.8",  // MQTT Broker server ip
+  "ISS_1",    // Client name that uniquely identify your device
+  1883              // The MQTT port, default to 1883. this line can be omitted
+);
 
 //O LDR está conectado com o GPIO 34
 const int ldrPin = 34;
@@ -37,16 +46,6 @@ bool needBreak = false;
 
 BluetoothSerial SerialBT;
 
-EspMQTTClient client(
-  "NOS-97E0",
-  "6b887270b6c1",
-  "10.0.2.15",  // MQTT Broker server ip
-//  "MQTTUsername",   // Can be omitted if not needed
-//  "MQTTPassword",   // Can be omitted if not needed
-  "room/mov",     // Client name that uniquely identify your device
-  1883              // The MQTT port, default to 1883. this line can be omitted
-);
-
 
 void setup() {
   // put your setup code here, to run once:
@@ -56,19 +55,42 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   pinMode(pirPin, INPUT);
-
+  Serial.println(TOPICSUB);
+  Serial.println(TOPICPUB);
 }
 
 void onConnectionEstablished()
 {
-  client.subscribe("room/mov", [](const String & payload) {
+  client.subscribe(TOPICSUB, [](const String & payload) {
     Serial.println(payload);
+    ledC = payload.toInt();
+    switch (ledC) {
+      case 0:
+        digitalWrite(ledPin, LOW);
+        break;
+      case 1:
+        digitalWrite(ledPin, HIGH);
+        break;
+      case 2:
+        break;
+    }
   });
-  client.publish("room/mov", "This is a message from arduino");
 }
 
 void loop() {
   client.loop();
+
+  /*int pirStat2 = digitalRead(pirPin);
+
+    if (pirStat2 == HIGH && var == false) {
+    var = true;
+    String messag = String(ISS) + ";" + String(currentTimestamp());
+    client.publish(TOPICPUB, messag);
+    }
+    if (pirStat2 == false)
+    var = false;*/
+
+    
   if (SerialBT.available()) {
     //ler trama
     SerialBT.readBytes(aux, STARTPACKETSIZE);
@@ -77,7 +99,7 @@ void loop() {
       reseting();
       startPacket(aux, &startTS, &pa);
       data1Packet(dataPacket, currentTimestamp());
-      
+
       Serial.println((String)"Timestamp inicial " + startTS);
 
       bool erros = false;
@@ -102,6 +124,7 @@ void loop() {
 
         int n;
         while (needBreak == false) {
+          client.loop();
           unsigned long currentTime = millis();
 
           if (currentTime - previousTime >= pa) {
@@ -113,6 +136,7 @@ void loop() {
 
           while (SerialBT.available() > 0) {
             uint8_t n1 = SerialBT.read();
+
 
             if (n1 == STOP) {
               int rsn;
@@ -163,8 +187,8 @@ void sensorSystem() {
   float converted = val / (current * 1000);
   float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
-  Serial.println((String)"Posição: " + pos + " Valor do LDR: " + ldrValue + " Tensão: " + voltage_value + " Lux: "+ lux);
-  Serial.println((String)"Timestamp: "+currentTimestamp());
+  Serial.println((String)"Posição: " + pos + " Valor do LDR: " + ldrValue + " Tensão: " + voltage_value + " Lux: " + lux);
+  Serial.println((String)"Timestamp: " + currentTimestamp());
 
   if (pirStat == HIGH) {
     if (voltage_value <= 2.0) {
@@ -176,9 +200,9 @@ void sensorSystem() {
 
     if (var == false) {
       /*data2Packet(aux, currentTimestamp(), led); Não envia mais a trama do tipo 2
-      SerialBT.write(aux, DATA2PACKETSIZE);*/ 
-
-      
+        SerialBT.write(aux, DATA2PACKETSIZE);*/
+      String messag = String(ISS) + ";" + String(currentTimestamp());
+      client.publish(TOPICPUB, messag);
     }
     var = true;
   }
@@ -202,8 +226,8 @@ void sensorSystem() {
 
 
 uint32_t currentTimestamp() {
-  Serial.println((String)"Millis: " + millis() + " InitialTS: " + initialTS + " startTS: "+startTS);
-  return ((uint32_t)((millis() - initialTS)/1000) + startTS);
+  Serial.println((String)"Millis: " + millis() + " InitialTS: " + initialTS + " startTS: " + startTS);
+  return ((uint32_t)((millis() - initialTS) / 1000) + startTS);
 }
 
 int conditions(bool led) {

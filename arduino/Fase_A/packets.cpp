@@ -56,6 +56,9 @@ void data1Packet(uint8_t packet[] , uint32_t tsp) {
 }
 
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
   DATA2 -> [ TPM (1 byte) | ISS (1 byte) | TSP (4 bytes) | TGM (1 byte) | VAL (1 byte) ]
 
@@ -70,6 +73,7 @@ void data1Packet(uint8_t packet[] , uint32_t tsp) {
   tsp -> Valor do timestamp atual
   state -> Estado do tipo inteiro, devolve 0 no caso de LOW e 1 no caso de HIGH
 */
+/*
 void data2Packet(uint8_t packet[] , uint32_t tsp, int state) {
   packet[0] = DATA2;
   packet[1] = ISS;
@@ -77,6 +81,8 @@ void data2Packet(uint8_t packet[] , uint32_t tsp, int state) {
   packet[6] = 'S';
   packet[7] = state;
 }
+*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 /*
