@@ -5,7 +5,7 @@
             GRUPO 1 - LTI II
         </div>
 
-        <div class="menu">
+        <div *ngIf="isLoggedIn()" class="menu">
             <a routerLink="/data-visual">
                 <button mat-button>
                     <span class="sub">Visualização de Dados</span>
