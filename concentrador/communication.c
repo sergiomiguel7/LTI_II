@@ -18,6 +18,8 @@
 //socket udp
 struct sockaddr_in servaddr;
 
+void *mqtt_init(void *varg);
+
 void receiveData(char *readBuf);
 
 // ------- BUILD PACKETS ---------------
@@ -153,10 +155,10 @@ void closePorts()
 void handleBegin(char *str, char *receive)
 {
     pthread_t tid;
-    if (pthread_create(&tid, NULL, mqtt_init, (void *)))
+    if (pthread_create(&tid, NULL, mqtt_init, NULL))
     {
         perror("not created");
-        return 1;
+        exit(-1);
     }
     for (int i = 0; i < configuredPorts; i++)
     {
@@ -383,19 +385,20 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
         strcpy(state, "Desligado");
 
     sonConfig.iss = iss;
+    printf("%u %u %s\n",iss,timestamp,state);
     sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
-            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, "S", state);
+            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, 'S', state);
 
-    //TO DO:
+    //TO DO: ever
 }
 
-void *mqtt_init(void *arg)
+void *mqtt_init(void *varg)
 {
     int rc, id = 1;
     mosquitto_lib_init();
     struct mosquitto *mosq;
 
-    mosq = mosquitto_new("Concentrador", true, 10);
+    mosq = mosquitto_new("Concentrador", true, &id);
 
     mosquitto_connect_callback_set(mosq, on_connect);
     mosquitto_message_callback_set(mosq, on_message);
@@ -405,7 +408,7 @@ void *mqtt_init(void *arg)
     if (rc)
     {
         printf("Could not connect to Broker with return code %d\n", rc);
-        return ;
+        exit(-1);
     }
 
     mosquitto_loop_forever(mosq, -1, 1);
@@ -413,5 +416,5 @@ void *mqtt_init(void *arg)
     mosquitto_disconnect(mosq);
     mosquitto_destroy(mosq);
     mosquitto_lib_cleanup();
-    return ;
+    exit(-1);
 }
