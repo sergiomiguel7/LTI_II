@@ -178,7 +178,6 @@ void insertDB(char *buff)
 
 
     int counter = 0;
-    conn = mysql_init(NULL);
     char buffer[212];
     int id;
     char unidade[1];
@@ -210,7 +209,7 @@ void insertDB(char *buff)
             id_concentrador = atoi(token);
             break;
         case 5:
-            timestamp = (uint32_t) atoi(token);
+            timestamp = (uint32_t) token;
             break;
         default:
             break;
@@ -224,14 +223,9 @@ void insertDB(char *buff)
     sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES (%d, '%s', '%d', %d, %d, '%d')",
             id, unidade, valor, id_sensor, id_concentrador, timestamp);
 
-    if (mysql_real_connect(conn, "localhost", "root", "Vitoriag7!", "sensoresdb", 0, NULL, 0) == NULL)
-    {
-        printf("%s\n", mysql_error(conn));
-        mysql_close(conn);
-        exit(1);
-    }
+    write(1, buffer, strlen(buffer));
 
-    if (mysql_query(conn, "") != 0)
+    if (mysql_query(conn, buffer) != 0)
     {
         fprintf(stderr, "Query Failure\n");
         exit(0);
