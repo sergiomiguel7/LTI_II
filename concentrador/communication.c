@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include "rs232/rs232.h"
 #include "api.h"
+#include <mosquitto.h>
 
 //socket udp
 struct sockaddr_in servaddr;
@@ -70,7 +71,7 @@ int buildLedPacket(char *str, uint8_t signal)
 
 void openFiles()
 {
-    fdData = open("log/data.csv",  O_CREAT | O_RDWR | O_APPEND, 0666);
+    fdData = open("log/data.csv", O_CREAT | O_RDWR | O_APPEND, 0666);
     fdErrors = open("log/errors.txt", O_RDWR | O_CREAT | O_APPEND, 0666);
 }
 
@@ -151,6 +152,12 @@ void closePorts()
  **/
 void handleBegin(char *str, char *receive)
 {
+    pthread_t tid;
+    if (pthread_create(&tid, NULL, mqtt_init, (void *)))
+    {
+        perror("not created");
+        return 1;
+    }
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -275,7 +282,7 @@ void receiveData(char *readBuf)
                                 }
                             }
                         //DATA 2 PACKET (S)
-                        else if (readBuf[0] == DATA2)
+                        /*else if (readBuf[0] == DATA2)
                         {
                             char state[12];
                             uint8_t value = readBuf[7];
@@ -299,7 +306,7 @@ void receiveData(char *readBuf)
                                 if (sonConfig.realtime)
                                     write(1, entry, strlen(entry));
                             }
-                        }
+                        }*/
                     }
                 }
                 memset(entry, 0, sizeof entry);
@@ -348,4 +355,63 @@ int checkValue(char type, float value, uint32_t timestamp, int socketFd, int ope
     }
 
     return 0;
+}
+
+void on_connect(struct mosquitto *mosq, void *obj, int rc)
+{
+    if (rc)
+    {
+        printf("Error with result code: %d\n", rc);
+        exit(-1);
+    }
+    mosquitto_subscribe(mosq, NULL, "room/mov", 0);
+}
+
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
+{
+    char entry[SIZE_DATA];
+    char state[12];
+
+    char *token = strtok(msg->payload, ";");
+    uint8_t iss = atoi(token);
+    token = strtok(NULL, ";");
+    uint32_t timestamp = strtoul(token, NULL, 10);
+    token = strtok(NULL, ";");
+    if (strcmp(token, "1"))
+        strcpy(state, "Ligado");
+    else
+        strcpy(state, "Desligado");
+
+    sonConfig.iss = iss;
+    sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
+            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, "S", state);
+
+    //TO DO:
+}
+
+void *mqtt_init(void *arg)
+{
+    int rc, id = 1;
+    mosquitto_lib_init();
+    struct mosquitto *mosq;
+
+    mosq = mosquitto_new("Concentrador", true, 10);
+
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_message_callback_set(mosq, on_message);
+
+    rc = mosquitto_connect(mosq, "localhost", 1883, 10);
+
+    if (rc)
+    {
+        printf("Could not connect to Broker with return code %d\n", rc);
+        return ;
+    }
+
+    mosquitto_loop_forever(mosq, -1, 1);
+
+    mosquitto_disconnect(mosq);
+    mosquitto_destroy(mosq);
+    mosquitto_lib_cleanup();
+    return ;
 }
