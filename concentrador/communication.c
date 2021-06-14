@@ -379,7 +379,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
     token = strtok(NULL, ";");
     uint32_t timestamp = strtoul(token, NULL, 10);
     token = strtok(NULL, ";");
-    if (strcmp(token, "1"))
+    if (strcmp(token, "1") == 0)
         strcpy(state, "Ligado");
     else
         strcpy(state, "Desligado");
