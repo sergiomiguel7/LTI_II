@@ -12,30 +12,37 @@ getValues = async (req, res) => {
 
     const limit = req.query.limit ? req.query.limit : 10;
     const page = req.query.page ? req.query.page : 1;
-    const id_sensor = req.query.sensor;
+    const id_sensor = req.query.id_sensor;
 
     try {
         let sensores = [];
 
-        if (!id_sensor) {
+        if (!id_sensor) { //no filter
             let response = await DataController.getData("SELECT * FROM sensor WHERE id_concentrador = ?", [req.params.id_concentrador]);
-            sensores.push(response);
+            sensores.push(...response);
         } else {
             let response = await DataController.getData("SELECT * FROM sensor WHERE id = ?", [id_sensor]);
-            sensores.push(response);
+            sensores.push(...response);
         }
 
-        let data = [];
-        sensores.forEach(async (sensor) => {
-            let response = await DataController.getData("SELECT * FROM dado WHERE id_sensor = ? LIMIT ? OFFSET ?", [sensor.id, limit, page * limit])
-            data.push({ sensor: sensor, values: response });
-        })
+        let values = [];
+        let counter = 0;
 
-        res.status(200)
-            .json({
-                user: req.user,
-                data: data
+        sensores.forEach((sensor) => {
+            DataController.getData("SELECT * FROM dado WHERE id_sensor = ?", [sensor.id]).then((response) => {
+                sensor["data"] = response;
+                values.push(sensor);
+
+                counter++;
+                if (counter == sensores.length) {
+                    res.status(200)
+                        .json({
+                            user: req.user,
+                            sensores: values
+                        });
+                }
             });
+        });
 
     }
     catch (err) {

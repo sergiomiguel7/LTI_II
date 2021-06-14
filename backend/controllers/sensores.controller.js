@@ -1,8 +1,11 @@
 const DataController = require('./data.controller');
 
-getConcentradores = async (req, res) => {
+/**
+ * @param id_concentrador - only can get sensor from concentrador id
+ */
+getSensores = async (req, res) => {
     try {
-        let response = await DataController.getData("SELECT * FROM concentrador WHERE id_user = ?", [req.user.id]);
+        let response = await DataController.getData("SELECT * FROM sensor WHERE id_concentrador = ?", [req.params.id_concentrador]);
         res.status(200).json({
             user: req.user,
             data: response
@@ -14,12 +17,12 @@ getConcentradores = async (req, res) => {
 
 }
 
-createConcentrador = async (req,res) => {
+createSensor = async (req,res) => {
 
-    req.body["id_user"] = req.user.id;
-
+    req.body["id_concentrador"] = req.params.id_concentrador;
+    
     try{
-        let response = await DataController.getData("INSERT INTO concentrador SET ?" , [req.body]);
+        let response = await DataController.getData("INSERT INTO sensor SET ?" , [req.body]);
         let data = {...req.body, id: response.insertId}
         res.status(200).json({
             user: req.user,
@@ -33,7 +36,7 @@ createConcentrador = async (req,res) => {
 /**
  * @param id_concentrador
  */
-updateConcentrador = async (req, res) => {
+updateSensor = async (req, res) => {
     console.log(req.body);
     try{ 
         let response = await DataController.getData("UPDATE concentrador SET ? WHERE id = ?",[req.body ,req.params.id_concentrador]);
@@ -50,7 +53,7 @@ updateConcentrador = async (req, res) => {
 /**
  * @param id_concentrador
  */
- deleteConcentrador = async (req, res) => {
+ deleteSensor = async (req, res) => {
     console.log(req.body);
     try{ 
         let response = await DataController.getData("DELETE FROM concentrador WHERE id = ?",[req.params.id_concentrador]);
@@ -65,8 +68,8 @@ updateConcentrador = async (req, res) => {
 
 
 module.exports = {
-    getConcentradores,
-    createConcentrador,
-    updateConcentrador,
-    deleteConcentrador
+    getSensores,
+    createSensor,
+    updateSensor,
+    deleteSensor
 }
