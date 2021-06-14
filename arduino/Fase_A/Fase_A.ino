@@ -16,7 +16,7 @@ int pos = 0;
 EspMQTTClient client(
   "NOS-97E0",
   "6b887270b6c1",
-  "192.168.1.8",  // MQTT Broker server ip
+  "192.168.1.5",  // MQTT Broker server ip
   "ISS_1",    // Client name that uniquely identify your device
   1883              // The MQTT port, default to 1883. this line can be omitted
 );
@@ -80,15 +80,15 @@ void onConnectionEstablished()
 void loop() {
   client.loop();
 
-  /*int pirStat2 = digitalRead(pirPin);
+  int pirStat2 = digitalRead(pirPin);
 
     if (pirStat2 == HIGH && var == false) {
     var = true;
-    String messag = String(ISS) + ";" + String(currentTimestamp());
+    String messag = String(ISS) + ";" + String(currentTimestamp())+";1";
     client.publish(TOPICPUB, messag);
     }
     if (pirStat2 == false)
-    var = false;*/
+    var = false;
 
     
   if (SerialBT.available()) {
@@ -201,7 +201,7 @@ void sensorSystem() {
     if (var == false) {
       /*data2Packet(aux, currentTimestamp(), led); Não envia mais a trama do tipo 2
         SerialBT.write(aux, DATA2PACKETSIZE);*/
-      String messag = String(ISS) + ";" + String(currentTimestamp());
+      String messag = String(ISS) + ";" + String(currentTimestamp() + ";" + String(led));
       client.publish(TOPICPUB, messag);
     }
     var = true;
