@@ -172,44 +172,46 @@ void connectDB()
 
 void insertDB(char *buff)
 {
-    MYSQL *conn;
-    MYSQL_RES res;
+    MYSQL_RES *res;
     MYSQL_ROW row;
-
-
     int counter = 0;
     char buffer[212];
-    int id;
+
+    char user[14];
+    char area[12];
+    int id_concentrador;
+
     char unidade[1];
     int valor;
     int id_sensor;
-    int id_concentrador;
     uint32_t timestamp;
 
     char *token = strtok(buff, ";");
-
 
     while (token != NULL)
     {
         switch (counter)
         {
         case 0:
-            id = atoi(token);
+            strcpy(user, token);
             break;
         case 1:
-            strcpy(unidade, token);
+            strcpy(area, token);
             break;
         case 2:
-            valor = atoi(token);
-            break;
-        case 3:
-            id_sensor = atoi(token);
-            break;
-        case 4:
             id_concentrador = atoi(token);
             break;
+        case 3:
+            strcpy(unidade, token);
+            break;
+        case 4:
+            valor = atoi(token);
+            break;
         case 5:
-            timestamp = (uint32_t) token;
+            id_sensor = atoi(token);
+            break;
+        case 6:
+            timestamp = (uint32_t)token;
             break;
         default:
             break;
@@ -219,16 +221,37 @@ void insertDB(char *buff)
         token = strtok(NULL, ";");
     }
 
+    res = mysql_store_result(con);
+
+    if (mysql_query(con, "SELECT id FROM concentrador") == false)
+    {
+        memset(buffer, 0, 212);
+        sprintf(buffer, "INSERT INTO concentrador(area,id_user) VALUES ('%s', '%s')",
+                area, user);
+    }
+
+    if (mysql_query(con, "SELECT id_concentrador FROM sensor") == false)
+    {
+        memset(buffer, 0, 212);
+        sprintf(buffer, "INSERT INTO sensor(area,id_concentrador) VALUES ('%s',%d)",
+                area, id_concentrador);
+    }
+
+    if (mysql_num_rows(res))
+    {
+        
+    }
+
     memset(buffer, 0, 212);
-    sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES (%d, '%s', '%d', %d, %d, '%d')",
-            id, unidade, valor, id_sensor, id_concentrador, timestamp);
+    sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%d', %d, %d, '%d')",
+            unidade, valor, id_sensor, id_concentrador, timestamp);
 
     write(1, buffer, strlen(buffer));
 
-    if (mysql_query(conn, buffer) != 0)
+    if (mysql_query(con, buffer) != 0)
     {
         fprintf(stderr, "Query Failure\n");
         exit(0);
     }
-    mysql_close(conn);
+    mysql_close(con);
 }

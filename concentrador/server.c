@@ -129,7 +129,7 @@ void func(int sockfd_TCP, int sockfd_UDP)
 
         // read the message from UDP server and copy it into the TCP client
         read(sockfd_UDP, buff, sizeof(buff));
-        sprintf(message, "%s;%d;%s",area,ID, buff);
+        sprintf(message, "%s;%s;%d;%s",user,area,ID, buff);
 
         // and send that buffer to TCP Server
         write(sockfd_TCP, message, strlen(message));
