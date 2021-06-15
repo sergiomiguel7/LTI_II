@@ -35,7 +35,7 @@ int main()
 
     connectDB();
 
-    if (pthread_create(&ted, NULL, mqtt_init,NULL))
+    if (pthread_create(&ted, NULL, mqtt_init, NULL))
     {
         perror("not created");
         exit(-1);
@@ -131,10 +131,12 @@ void *func(void *arg)
                     shutdown(sock, SHUT_RDWR);
                     return 0;
                 }
-            }else{
+            }
+            else
+            {
                 insertDB(buff);
-            }   
-             
+            }
+
             bzero(buff, MAX);
         }
 
@@ -251,7 +253,7 @@ void insertDB(char *buff)
     }
     res = mysql_store_result(con);
 
-   if (mysql_num_rows(res) == 0) //user nao existe
+    if (mysql_num_rows(res) == 0) //user nao existe
     {
         user_exist = 0;
     }
@@ -266,7 +268,7 @@ void insertDB(char *buff)
 
     if (user_exist == 1)
     {
-        bzero(buffer,0);
+        bzero(buffer, 0);
         //INSERIR DADO
         sprintf(buffer, "INSERT INTO dado(unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%f', %d, %d, %u)",
                 unidade, valor, id_sensor, id_concentrador, timestamp);
@@ -274,7 +276,9 @@ void insertDB(char *buff)
         if (mysql_query(con, buffer) != 0)
         {
             fprintf(stderr, "Query Failure 4\n");
-        } else{
+        }
+        else
+        {
             write(1, "Inserido com sucesso\n", 10);
         }
     }
@@ -302,28 +306,31 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
     uint32_t timestamp = strtoul(token, NULL, 10);
     token = strtok(NULL, ";");
     state = atoi(token);
-    
+
     char buffer[1024];
 
     sprintf(buffer, "SELECT id_concentrador FROM sensor WHERE id = %d", iss);
 
     mysql_query(con, buffer);
-    
+
     res = mysql_store_result(con);
 
     row = mysql_fetch_row(res);
+    int id_concentrador = atoi(row[0]);
 
-    int id_concentrador = atoi(row[0]); 
-    
     mysql_free_result(res);
 
-    memset(buffer, 0, 1024);
-    sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%d', '%f', %d, %d, '%d')",
-            'S', state, iss, id_concentrador, timestamp);
+    bzero(buffer, 0);
+    //INSERIR DADO
+    sprintf(buffer, "INSERT INTO dado(unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', %f, %d, %d, %u)",
+            "S", state, iss, id_concentrador, timestamp);
 
-    mysql_query(con, buffer);
-
-
+    if (mysql_query(con, buffer) != 0)
+    {
+        fprintf(stderr, "Query Failure 4\n");
+    } else{
+        write(1, "Inserido com sucesso\n", 10);
+    }
 }
 
 void *mqtt_init(void *varg)
@@ -332,7 +339,7 @@ void *mqtt_init(void *varg)
     mosquitto_lib_init();
     struct mosquitto *mosq;
 
-    mosq = mosquitto_new("Concentrador", true, &id);
+    mosq = mosquitto_new("Gestor", true, &id);
 
     mosquitto_connect_callback_set(mosq, on_connect);
     mosquitto_message_callback_set(mosq, on_message);
