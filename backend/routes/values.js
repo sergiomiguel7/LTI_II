@@ -5,7 +5,7 @@ const router = express.Router();
 
 
 //valores
-router.route('/:id_concentrador')
+router.route('/:id_concentrador/:unity')
     .get(AuthController.checkAuth ,ValuesController.getValues);
     
 

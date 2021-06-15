@@ -24,6 +24,7 @@ import { AdminPageComponent } from './pages/admin-page/admin-page.component';
 
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { SignupComponent } from './pages/signup/signup.component';
+import { MotionDetectionComponent } from './pages/motion-detection/motion-detection.component';
 
 
 @NgModule({
@@ -34,7 +35,8 @@ import { SignupComponent } from './pages/signup/signup.component';
     MenuComponent,
     LoginComponent,
     AdminPageComponent,
-    SignupComponent
+    SignupComponent,
+    MotionDetectionComponent
   ],
   imports: [
     BrowserModule,

@@ -1,5 +1,5 @@
 .data-wrapper{
-    padding: 15px 25px;
+    padding: 25px;
 
     .margin{
         margin-left: 15px;
@@ -8,8 +8,7 @@
     .action-row{
         display: flex;
         flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+        justify-content: flex-end;
 
         .toogle{
             display: flex;
@@ -22,16 +21,9 @@
         flex-direction: row;
         align-items: flex-start;
 
-        .table{
-            flex: 1;
-            padding: 10px;
-
-            h1{
-                color:cornflowerblue;
-            }
-        }
         .grow{
-            width: 100%;
+            flex: 1;
+            padding: 5px;
         }
     }
 }
