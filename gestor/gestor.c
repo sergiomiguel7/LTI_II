@@ -185,7 +185,9 @@ void insertDB(char *buff)
 {
     MYSQL_RES *res;
     MYSQL_ROW row;
+
     int user_exist = 1;
+    int id_user;
 
     int counter = 0;
     char buffer[1024];
@@ -199,6 +201,8 @@ void insertDB(char *buff)
     float valor;
     int id_sensor;
     uint32_t timestamp;
+
+    write(1, buff, strlen(buff));
 
     char *token = strtok(buff, ";");
 
@@ -233,19 +237,20 @@ void insertDB(char *buff)
         default:
             break;
         }
-
         counter++;
         token = strtok(NULL, ";");
     }
-    
+
+    bzero(buffer, 0);
+
     //GET ID USERNAME
     sprintf(buffer, "SELECT id FROM user WHERE username = '%s'", user);
     if (mysql_query(con, buffer) != 0)
     {
-        fprintf(stderr, "Query Failure\n");
+        fprintf(stderr, "Query Failure for getting user\n");
     }
-
     res = mysql_store_result(con);
+
    if (mysql_num_rows(res) == 0) //user nao existe
     {
         user_exist = 0;
@@ -254,58 +259,27 @@ void insertDB(char *buff)
     {
         user_exist = 1;
         row = mysql_fetch_row(res);
-        printf("%s", row[0]);
+        id_user = atoi(row[0]);
     }
+
     mysql_free_result(res);
 
     if (user_exist == 1)
     {
-        //VERIFICAR CONCENTRADOR
-        memset(buffer, 0, 1024);
-        sprintf(buffer, "SELECT * FROM concentrador WHERE id = %d", id_concentrador);
-
-        if (mysql_query(con, buffer) != 0)
-        {
-            fprintf(stderr, "Query Failure\n");
-        }
-
-        if (mysql_num_rows(res) == 0) //concentrador não existe, inserir
-        {
-            memset(buffer, 0, 1024);
-            sprintf(buffer, "INSERT INTO concentrador(area,id_user) VALUES ('%s', '%s')",
-                    area, user);
-        }
-
-        //VERIFICAR SENSOR
-        memset(buffer, 0, 1024);
-        sprintf(buffer, "SELECT * FROM sensor WHERE id = %d", id_sensor);
-
-        if (mysql_query(con, buffer) != 0)
-        {
-            fprintf(stderr, "Query Failure\n");
-        }
-
-        if (mysql_num_rows(res) == 0) //sensor não existe, inserir
-        {
-            memset(buffer, 0, 1024);
-            sprintf(buffer, "INSERT INTO sensor(area,id_concentrador) VALUES ('%s',%d)",
-                    area_sensor, id_concentrador);
-        }
-
+        bzero(buffer,0);
         //INSERIR DADO
-
-        memset(buffer, 0, 1024);
-        sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%f', %d, %d, '%d')",
+        sprintf(buffer, "INSERT INTO dado(unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%f', %d, %d, %u)",
                 unidade, valor, id_sensor, id_concentrador, timestamp);
 
         if (mysql_query(con, buffer) != 0)
         {
-            fprintf(stderr, "Query Failure\n");
-            exit(0);
+            fprintf(stderr, "Query Failure 4\n");
+        } else{
+            write(1, "Inserido com sucesso\n", 10);
         }
     }
-
 }
+
 void on_connect(struct mosquitto *mosq, void *obj, int rc)
 {
     if (rc)

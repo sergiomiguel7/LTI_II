@@ -30,7 +30,7 @@ CREATE TABLE dado(
 	valor float,
 	id_sensor int,
 	id_concentrador int,
-	timestamp timestamp,
+	timestamp varchar(10),
 	FOREIGN KEY(id_sensor) REFERENCES sensor(id), 
 	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
 );
