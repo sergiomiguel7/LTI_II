@@ -39,10 +39,7 @@ export class LoginComponent implements OnInit {
       console.log("data", data);
       if(data.token){
         this.auth.changeUser(data);
-        if(data.role == 'admin')
-          this.router.navigate(["/admin"]);
-        else
-          this.router.navigate(["/data-visual"]);
+        this.router.navigate(["/data-visual"]);
       } 
     }, (err) => {
       alert(err.message);
