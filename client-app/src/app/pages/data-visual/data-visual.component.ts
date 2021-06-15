@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Chart } from 'chart.js';
 import * as moment from 'moment';
+import { EditConcentradorComponent } from 'src/app/components/edit-concentrador/edit-concentrador.component';
 import { ValuesService } from 'src/app/services/values.service';
 
 @Component({
@@ -47,6 +49,7 @@ export class DataVisualComponent implements OnInit {
   showTable: boolean = true;
 
   constructor(private http: HttpClient,
+    public dialog: MatDialog,
     private valuesService: ValuesService) {
   }
 
@@ -155,6 +158,23 @@ export class DataVisualComponent implements OnInit {
       this.buildChart();
 
     })
+  }
+
+  editConcentrador(){
+    let item = this.concentradores.find((el: any) => el.id == this.idConcentrador);
+    const dialogRef = this.dialog.open(EditConcentradorComponent, {
+      panelClass: 'custom-dialog-container',
+      autoFocus: false,
+      maxHeight: '90vh',
+      data: { item: item }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed', result);
+      if (result) {
+        this.getConcentradores();
+      }
+    });
   }
 
   buildChart() {

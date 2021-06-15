@@ -30,7 +30,12 @@
               <mat-option *ngFor="let option of states" [value]="option">{{option.label}}</mat-option>
             </mat-select>
           </mat-form-field>
-    
+          
+          <div class="btn-container">
+            <button (click)="editConcentrador()" *ngIf="idConcentrador"  mat-raised-button color="primary">Editar Concentrador</button>
+          </div>
+          
+
     </div>
 
     

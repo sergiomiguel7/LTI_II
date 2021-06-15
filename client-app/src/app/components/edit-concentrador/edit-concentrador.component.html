@@ -1,0 +1,19 @@
+<div class="container">
+    <div class="header">
+        <div></div>
+        <div class="header-title" translate>Editar Concentrador</div>
+        <div class="close" (click)="onCloseCancel(false)">+</div>
+    </div>
+
+    <div class="content">
+        <div class="input-wrapper">
+            <div class="input-label" translate>Área do Concentrador</div>
+            <input class="input-value" placeholder="DSI, Casa" type="text" [(ngModel)]="concentrador.area">
+        </div>
+
+        <div class="btn-wrapper">
+            <div (click)="onCloseCancel(false)" class="btn-cancel" translate>Cancelar</div>
+            <div (click)="submit()" class="btn-add small" translate>Guardar</div>
+        </div>
+    </div>
+</div>

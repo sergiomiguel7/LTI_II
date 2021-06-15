@@ -28,4 +28,9 @@ export class ValuesService {
     return response$;
   }
 
+ patchConcentrador(body:any, id: number){
+    const url = `${apiUrl}/concentradores/${id}`;
+    const response$ = this.http.patch(url, body);
+    return response$;
+  }
 }
