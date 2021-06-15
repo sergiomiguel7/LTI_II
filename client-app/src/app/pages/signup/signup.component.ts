@@ -3,15 +3,14 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { AuthServiceService } from 'src/app/services/auth-service.service';
 
-
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  selector: 'app-signup',
+  templateUrl: './signup.component.html',
+  styleUrls: ['./signup.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class SignupComponent implements OnInit {
 
-  loginForm: FormGroup |any;
+  registerForm: FormGroup |any;
   error: any;
 
   constructor(private auth: AuthServiceService,
@@ -23,30 +22,28 @@ export class LoginComponent implements OnInit {
    }
 
   ngOnInit(): void {
-    this.loginForm = this.formBuilder.group({
+    this.registerForm = this.formBuilder.group({
       username: ['', [Validators.required]],
       password: ['', Validators.required]
     });
   }
 
-  goToRegister(){
-    this.router.navigate(["/registo"]);
+  
+  goToLogin(){
+    this.router.navigate(["/login"]);
   }
 
+
   onSubmit(){
-    let body = this.loginForm.value; 
-    this.auth.login(body).subscribe((data: any) => {
-      console.log("data", data);
-      if(data.token){
-        this.auth.changeUser(data);
-        if(data.role == 'admin')
-          this.router.navigate(["/admin"]);
-        else
-          this.router.navigate(["/data-visual"]);
+    let body = this.registerForm.value; 
+
+    this.auth.signup(body).subscribe((data: any) => {
+      
+      if(data.id){
+        this.router.navigate(["/login"]);
       } 
     }, (err) => {
       alert(err.message);
     })
   }
-
 }

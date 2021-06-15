@@ -45,6 +45,12 @@ export class AuthServiceService {
     return $response;
   }
 
+  signup(body: any){
+    const url = `${apiUrl}/auth/signup`;
+    const $response = this.http.post(url, body);
+    return $response;
+  }
+
   logout(){
     localStorage.removeItem("currentUser");
     this.currentUserSubject.next(null);

@@ -23,6 +23,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { AdminPageComponent } from './pages/admin-page/admin-page.component';
 
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { SignupComponent } from './pages/signup/signup.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     LayoutComponent,
     MenuComponent,
     LoginComponent,
-    AdminPageComponent
+    AdminPageComponent,
+    SignupComponent
   ],
   imports: [
     BrowserModule,
