@@ -280,9 +280,10 @@ void insertDB(char *buff)
         else
         {
             write(1, "Inserido com sucesso\n", 23);
-            //update area
+
+            //update area sensor
             bzero(buffer, 0);
-            sprintf(buffer, "UPDATE concentrador SET area = '%s' WHERE id = %d", area, id_concentrador);
+            sprintf(buffer, "UPDATE sensor SET area = '%s' WHERE id = %d", area_sensor, id_sensor);
 
             if (mysql_query(con, buffer) != 0)
             {
@@ -291,18 +292,6 @@ void insertDB(char *buff)
             else
             {
                 write(1, "Update com sucesso\n", 21);
-                //update area sensor
-                bzero(buffer, 0);
-                sprintf(buffer, "UPDATE sensor SET area = '%s' WHERE id = %d", area_sensor, id_sensor);
-
-                if (mysql_query(con, buffer) != 0)
-                {
-                    fprintf(stderr, "Query Failure on update\n");
-                }
-                else
-                {
-                    write(1, "Update com sucesso\n", 21);
-                }
             }
         }
     }
