@@ -1,18 +1,19 @@
-module.exports = () => {
-    var mqtt = require('mqtt')
-    var client = mqtt.connect('mqtt://test.mosquitto.org')
+    const express = require('express');
+    const mqtt = require('mqtt')
 
-    client.on('connect', function () {
-        client.subscribe('presence', function (err) {
-            if (!err) {
-                client.publish('presence', 'Hello mqtt')
-            }
-        })
-    })
+    const router = express.Router();
 
-    client.on('message', function (topic, message) {
-        // message is Buffer
-        //console.log(message.toString())
-        client.end()
-    })
-}
+    var client = mqtt.connect('mqtt://localhost')
+
+    /**
+     * body = {iss: 1, state: 0/1/2}
+     */
+    router.post('/', async(req,res,next) => {
+        console.log("body", req.body);
+        client.publish(`room/light/${req.body.iss}`, `${req.body.state}`);
+
+        res.json({msg: "ok"});
+    });
+
+
+    module.exports = router;

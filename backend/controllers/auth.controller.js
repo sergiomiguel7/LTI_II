@@ -18,13 +18,14 @@ login = (req, res, next) => {
                     if (result == true) {
                         const payload = {
                             id: rows[0].id,
-                            username: rows[0].username
+                            username: rows[0].username,
+                            role: rows[0].role
                         };
                         let token = jwt.sign(payload, process.env.TOKEN_SECRET, { expiresIn: '4d' });
                         DataController.getData("UPDATE user SET ? WHERE id = ?",
                             [{ token: token }, payload.id]).then((rows2) => {
                                 if (rows2.affectedRows > 0)
-                                    res.status(200).json({ token: token, id: payload.id });
+                                    res.status(200).json({ token: token, id: payload.id, role: payload.role });
                             }).catch((err) => {
                                 res.status(500).json({ message: err.message });
                             });
@@ -77,22 +78,22 @@ register = async (req, res, next) => {
 
 checkAuth = (req, res, callback) => {
     let token = req.get("Authorization");
-    if (!token)  res.status(401).send("Invalid token!");
+    if (!token) res.status(401).send("Invalid token!");
 
     let matchTokenUser = token.split(" ");
 
     DataController.getData("SELECT * FROM user WHERE token = ?", [matchTokenUser[1]])
-        .then((rows) => { 
-            if(rows.length == 0) {
-             return res.status(401).send("Invalid token!");
+        .then((rows) => {
+            if (rows.length == 0) {
+                return res.status(401).send("Invalid token!");
             }
 
             jwt.verify(matchTokenUser[1], process.env.TOKEN_SECRET, (err) => {
                 if (err) return res.status(401).send("Invalid token!");
-                
+
                 let user = rows[0];
                 delete user.password;
-    
+
                 req.user = rows[0];
                 return callback();
             });

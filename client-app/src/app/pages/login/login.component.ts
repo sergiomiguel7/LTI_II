@@ -11,7 +11,7 @@ import { AuthServiceService } from 'src/app/services/auth-service.service';
 })
 export class LoginComponent implements OnInit {
 
-  loginForm: FormGroup | any;
+  loginForm: FormGroup |any;
   error: any;
 
   constructor(private auth: AuthServiceService,
@@ -30,7 +30,17 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(){
-
+    let body = this.loginForm.value; 
+    this.auth.login(body).subscribe((data: any) => {
+      console.log("data", data);
+      if(data.token){
+        this.auth.changeUser(data);
+        if(data.role == 'admin')
+          this.router.navigate(["/admin"]);
+        else
+          this.router.navigate(["/data-visual"]);
+      }
+    })
   }
 
 }

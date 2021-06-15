@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon'
 import {MatButtonModule} from '@angular/material/button/'
@@ -10,6 +10,8 @@ import {MatTableModule} from '@angular/material/table'
 import {MatSlideToggleModule} from '@angular/material/slide-toggle'
 import { MatSortModule } from '@angular/material/sort';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {MatSelectModule} from '@angular/material/select';
+
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,6 +21,9 @@ import { MenuComponent } from './components/menu/menu.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LoginComponent } from './pages/login/login.component';
 import { AdminPageComponent } from './pages/admin-page/admin-page.component';
+
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
+
 
 @NgModule({
   declarations: [
@@ -43,9 +48,12 @@ import { AdminPageComponent } from './pages/admin-page/admin-page.component';
     MatSlideToggleModule,
     MatSortModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatSelectModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

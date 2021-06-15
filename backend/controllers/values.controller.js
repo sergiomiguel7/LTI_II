@@ -28,21 +28,25 @@ getValues = async (req, res) => {
         let values = [];
         let counter = 0;
 
-        sensores.forEach((sensor) => {
-            DataController.getData("SELECT * FROM dado WHERE id_sensor = ?", [sensor.id]).then((response) => {
-                sensor["data"] = response;
-                values.push(sensor);
+        if (sensores.length == 0) {
+            res.status(200).json({ user: req.user, data: [] })
+        }
+        else
+            sensores.forEach((sensor) => {
+                DataController.getData("SELECT * FROM dado WHERE id_sensor = ?", [sensor.id]).then((response) => {
+                    //               sensor["data"] = response;
+                    values.push(...response);
 
-                counter++;
-                if (counter == sensores.length) {
-                    res.status(200)
-                        .json({
-                            user: req.user,
-                            sensores: values
-                        });
-                }
+                    counter++;
+                    if (counter == sensores.length) {
+                        res.status(200)
+                            .json({
+                                user: req.user,
+                                data: values
+                            });
+                    }
+                });
             });
-        });
 
     }
     catch (err) {
