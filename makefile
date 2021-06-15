@@ -5,10 +5,10 @@ all: compile run
 
 compile: 
 	mkdir -p out
-	$(CC) concentrador/interface.c concentrador/communication.c concentrador/utils.c concentrador/rs232/rs232.c -lm -lmosquitto -pthread -o out/interface.out
+	$(CC) concentrador/interface.c concentrador/communication.c concentrador/utils.c concentrador/rs232/rs232.c -lm -pthread -lpthread -o out/interface.out
 	$(CC) concentrador/server.c -o out/server.out
 	$(CC) sensors/udp_client.c -o out/udp_client.out
-	$(CC) gestor/gestor.c -pthread -I/usr/include/mysql -lmysqlclient -o out/gestor.out
+	$(CC) gestor/gestor.c -pthread -I/usr/include/mysql -lmysqlclient -lmosquitto -o out/gestor.out
 config: 
 	sh concentrador/scripts/connection2.sh
 	sleep 2

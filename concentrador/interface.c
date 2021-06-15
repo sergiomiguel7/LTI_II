@@ -247,7 +247,7 @@ void showData()
                     long timeLine = (long)atoi(token2);
                     if (timeLine > time1 && timeLine < time2)
                     {
-                        char linePrint[SIZE2];
+                        char linePrint[SIZE2+1];
                         sprintf(linePrint, "%s\n", aux);
                         write(1, linePrint, strlen(linePrint));
                     }

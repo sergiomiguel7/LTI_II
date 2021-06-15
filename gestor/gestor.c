@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <mysql/mysql.h>
 #include "../concentrador/server_api.h"
+#include <mosquitto.h>
 #define SA struct sockaddr
 #define PORT_TCP 7778
 #define MAXLINE 1024
@@ -21,6 +22,7 @@
 void connectDB();
 void insertDB();
 void *func(void *arg);
+void *mqtt_init(void *varg);
 MYSQL *con;
 
 int main()
@@ -29,7 +31,15 @@ int main()
     struct sockaddr_in servaddr, cli;
     pthread_t tid;
 
+    pthread_t ted;
+
     connectDB();
+
+    if (pthread_create(&ted, NULL, mqtt_init,NULL))
+    {
+        perror("not created");
+        exit(-1);
+    }
 
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -121,14 +131,10 @@ void *func(void *arg)
                     shutdown(sock, SHUT_RDWR);
                     return 0;
                 }
-            }
-
-            write(1, buff, strlen(buff));
-
-            if(started == 1)
-             //   insertDB(buff);
-            
-
+            }else{
+                insertDB(buff);
+            }   
+             
             bzero(buff, MAX);
         }
 
@@ -179,18 +185,18 @@ void insertDB(char *buff)
 {
     MYSQL_RES *res;
     MYSQL_ROW row;
-
     int user_exist = 1;
 
     int counter = 0;
     char buffer[1024];
 
-    char user[14];
-    char area[12];
+    char user[40];
+    char area[24];
+    char area_sensor[25];
     int id_concentrador;
 
     char unidade[1];
-    int valor;
+    float valor;
     int id_sensor;
     uint32_t timestamp;
 
@@ -210,16 +216,19 @@ void insertDB(char *buff)
             id_concentrador = atoi(token);
             break;
         case 3:
-            strcpy(unidade, token);
-            break;
-        case 4:
-            valor = atoi(token);
-            break;
-        case 5:
             id_sensor = atoi(token);
             break;
+        case 4:
+            strcpy(area_sensor, token);
+            break;
         case 6:
-            timestamp = (uint32_t)token;
+            timestamp = strtoul(token, NULL, 10);
+            break;
+        case 7:
+            strcpy(unidade, token);
+            break;
+        case 8:
+            valor = atof(token);
             break;
         default:
             break;
@@ -228,9 +237,7 @@ void insertDB(char *buff)
         counter++;
         token = strtok(NULL, ";");
     }
-
-    res = mysql_store_result(con);
-
+    
     //GET ID USERNAME
     sprintf(buffer, "SELECT id FROM user WHERE username = '%s'", user);
     if (mysql_query(con, buffer) != 0)
@@ -238,7 +245,8 @@ void insertDB(char *buff)
         fprintf(stderr, "Query Failure\n");
     }
 
-    if (mysql_num_rows(res) == 0) //user nao existe
+    res = mysql_store_result(con);
+   if (mysql_num_rows(res) == 0) //user nao existe
     {
         user_exist = 0;
     }
@@ -248,7 +256,6 @@ void insertDB(char *buff)
         row = mysql_fetch_row(res);
         printf("%s", row[0]);
     }
-
     mysql_free_result(res);
 
     if (user_exist == 1)
@@ -282,16 +289,14 @@ void insertDB(char *buff)
         {
             memset(buffer, 0, 1024);
             sprintf(buffer, "INSERT INTO sensor(area,id_concentrador) VALUES ('%s',%d)",
-                    area, id_concentrador);
+                    area_sensor, id_concentrador);
         }
 
         //INSERIR DADO
 
         memset(buffer, 0, 1024);
-        sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%d', %d, %d, '%d')",
+        sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%f', %d, %d, '%d')",
                 unidade, valor, id_sensor, id_concentrador, timestamp);
-
-        write(1, buffer, strlen(buffer));
 
         if (mysql_query(con, buffer) != 0)
         {
@@ -300,5 +305,76 @@ void insertDB(char *buff)
         }
     }
 
-    mysql_close(con);
+}
+void on_connect(struct mosquitto *mosq, void *obj, int rc)
+{
+    if (rc)
+    {
+        printf("Error with result code: %d\n", rc);
+        exit(-1);
+    }
+    mosquitto_subscribe(mosq, NULL, "room/mov", 0);
+}
+
+void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
+{
+    MYSQL_RES *res;
+    MYSQL_ROW row;
+    float state;
+
+    char *token = strtok(msg->payload, ";");
+    int iss = atoi(token);
+    token = strtok(NULL, ";");
+    uint32_t timestamp = strtoul(token, NULL, 10);
+    token = strtok(NULL, ";");
+    state = atoi(token);
+    
+    char buffer[1024];
+
+    sprintf(buffer, "SELECT id_concentrador FROM sensor WHERE id = %d", iss);
+
+    mysql_query(con, buffer);
+    
+    res = mysql_store_result(con);
+
+    row = mysql_fetch_row(res);
+
+    int id_concentrador = atoi(row[0]); 
+    
+    mysql_free_result(res);
+
+    memset(buffer, 0, 1024);
+    sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%d', '%f', %d, %d, '%d')",
+            'S', state, iss, id_concentrador, timestamp);
+
+    mysql_query(con, buffer);
+
+
+}
+
+void *mqtt_init(void *varg)
+{
+    int rc, id = 1;
+    mosquitto_lib_init();
+    struct mosquitto *mosq;
+
+    mosq = mosquitto_new("Concentrador", true, &id);
+
+    mosquitto_connect_callback_set(mosq, on_connect);
+    mosquitto_message_callback_set(mosq, on_message);
+
+    rc = mosquitto_connect(mosq, "localhost", 1883, 10);
+
+    if (rc)
+    {
+        printf("Could not connect to Broker with return code %d\n", rc);
+        exit(-1);
+    }
+
+    mosquitto_loop_forever(mosq, -1, 1);
+
+    mosquitto_disconnect(mosq);
+    mosquitto_destroy(mosq);
+    mosquitto_lib_cleanup();
+    return NULL;
 }

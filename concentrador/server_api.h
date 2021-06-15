@@ -3,6 +3,7 @@
 #define PORT_TCP    7778
 #define MAXLINE 1024
 #define MAX 128
+#define MAX2 256
 #define START_TCP 1
 #define STOP_TCP 2
 #define DATA_TCP 3

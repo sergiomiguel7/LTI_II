@@ -13,12 +13,9 @@
 #include <fcntl.h>
 #include "rs232/rs232.h"
 #include "api.h"
-#include <mosquitto.h>
 
 //socket udp
 struct sockaddr_in servaddr;
-
-void *mqtt_init(void *varg);
 
 void receiveData(char *readBuf);
 
@@ -157,12 +154,6 @@ void closePorts()
  **/
 void handleBegin(char *str, char *receive)
 {
-    pthread_t tid;
-    if (pthread_create(&tid, NULL, mqtt_init, NULL))
-    {
-        perror("not created");
-        exit(-1);
-    }
     for (int i = 0; i < configuredPorts; i++)
     {
         if (actualConfig[i].opened)
@@ -362,62 +353,3 @@ int checkValue(char type, float value, uint32_t timestamp, int socketFd, int ope
     return 0;
 }
 
-void on_connect(struct mosquitto *mosq, void *obj, int rc)
-{
-    if (rc)
-    {
-        printf("Error with result code: %d\n", rc);
-        exit(-1);
-    }
-    mosquitto_subscribe(mosq, NULL, "room/mov", 0);
-}
-
-void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
-{
-    char entry[SIZE_DATA];
-    char state[12];
-
-    char *token = strtok(msg->payload, ";");
-    uint8_t iss = atoi(token);
-    token = strtok(NULL, ";");
-    uint32_t timestamp = strtoul(token, NULL, 10);
-    token = strtok(NULL, ";");
-    if (strcmp(token, "1") == 0)
-        strcpy(state, "Ligado");
-    else
-        strcpy(state, "Desligado");
-
-    sonConfig.iss = iss;
-    printf("%u %u %s\n",iss,timestamp,state);
-    sprintf(entry, "%u;%s;%s;%u;%c;%s;\n",
-            sonConfig.iss, sonConfig.area, sonConfig.GPS, timestamp, 'S', state);
-
-    //TO DO: ever
-}
-
-void *mqtt_init(void *varg)
-{
-    int rc, id = 1;
-    mosquitto_lib_init();
-    struct mosquitto *mosq;
-
-    mosq = mosquitto_new("Concentrador", true, &id);
-
-    mosquitto_connect_callback_set(mosq, on_connect);
-    mosquitto_message_callback_set(mosq, on_message);
-
-    rc = mosquitto_connect(mosq, "localhost", 1883, 10);
-
-    if (rc)
-    {
-        printf("Could not connect to Broker with return code %d\n", rc);
-        exit(-1);
-    }
-
-    mosquitto_loop_forever(mosq, -1, 1);
-
-    mosquitto_disconnect(mosq);
-    mosquitto_destroy(mosq);
-    mosquitto_lib_cleanup();
-    exit(-1);
-}

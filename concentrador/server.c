@@ -92,11 +92,11 @@ int main(int argc, char* argv[])
 void func(int sockfd_TCP, int sockfd_UDP)
 {
     char buff[MAX];
-    char message[MAX];
+    char message[MAX2];
 
     //auth on gestor
     bzero(buff, MAX);
-    bzero(message, MAX);
+    bzero(message, MAX2);
 
     char start[9];
     start[0] = START_TCP;
@@ -125,11 +125,11 @@ void func(int sockfd_TCP, int sockfd_UDP)
     while (1)
     {
         bzero(buff, MAX);
-        bzero(message, MAX);
+        bzero(message, MAX2);
 
         // read the message from UDP server and copy it into the TCP client
         read(sockfd_UDP, buff, sizeof(buff));
-        sprintf(message, "%s;%s;%d;%s",user,area,ID, buff);
+        sprintf(message, "%s;%s;%d;%s",user,area,ID,buff);
 
         // and send that buffer to TCP Server
         write(sockfd_TCP, message, strlen(message));
