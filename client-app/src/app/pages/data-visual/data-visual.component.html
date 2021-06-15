@@ -1,6 +1,41 @@
 <div class="data-wrapper">
 
+    <div class="form-row">
+        <mat-form-field appearance="fill">
+            <mat-label>Concentradores</mat-label>
+            <mat-select [formControl]="selectedConcentrador" (selectionChange)="changeItem($event.value)">
+              <mat-select-trigger>
+                {{selectedConcentrador.value ? selectedConcentrador.value.area : ''}}
+              </mat-select-trigger>
+              <mat-option *ngFor="let concentrador of concentradores" [value]="concentrador">{{concentrador.area}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="margin" *ngIf="idConcentrador" appearance="fill">
+            <mat-label>Sensores</mat-label>
+            <mat-select [formControl]="selectedSensor" (selectionChange)="selectSensor($event.value)">
+              <mat-select-trigger>
+                {{selectedSensor.value ? selectedSensor.value.area : ''}}
+              </mat-select-trigger>
+              <mat-option *ngFor="let sensor of sensores" [value]="sensor">{{sensor.area}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="margin" *ngIf="idSensor" appearance="fill">
+            <mat-label>Estado do Led</mat-label>
+            <mat-select [formControl]="selectedState" (selectionChange)="changeState($event.value)">
+              <mat-select-trigger>
+                {{selectedState.value ? selectedState.value.label : ''}}
+              </mat-select-trigger>
+              <mat-option *ngFor="let option of states" [value]="option">{{option.label}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+    
+    </div>
+
+    
     <div class="action-row">
+
         <div class="toogle">
             <mat-slide-toggle class="example-margin" color="primary" [checked]="showChart" (change)="toggle($event, 'chart')">
                 Dados em Gráfico
@@ -15,7 +50,7 @@
     </div>
 
 
-    <div class="row">
+    <div class="row" *ngIf="idConcentrador">
 
         <div [ngStyle]="{'display': showChart ? '' : 'none'}" style="height: 550px;" class="chart-container grow">
             <canvas id="myChart" width="400" height="400"></canvas>
@@ -27,7 +62,7 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Data </th>
                 <td mat-cell *matCellDef="let element"> {{element.date}} </td>
             </ng-container>
-
+<!-- 
             <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> ID Concentrador </th>
                 <td mat-cell *matCellDef="let element"> {{element.id}} </td>
@@ -36,11 +71,11 @@
             <ng-container matColumnDef="area">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Área Concentrador </th>
                 <td mat-cell *matCellDef="let element"> {{element.area}} </td>
-            </ng-container>
+            </ng-container> -->
 
-            <ng-container matColumnDef="value">
+            <ng-container matColumnDef="valor">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Valor (Lux) </th>
-                <td mat-cell *matCellDef="let element"> {{element.value}} </td>
+                <td mat-cell *matCellDef="let element"> {{element.valor}} </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

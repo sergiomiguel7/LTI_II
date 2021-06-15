@@ -11,7 +11,6 @@ require('./db/connection')(app, () => {
 
     require('./middleweares/index.js')(app, express);
     require('./middleweares/router')(app);
-    require('./middleweares/mqtt')();
     app.listen(port, () => console.log(`Server started at port ${port}`));
 
 });
