@@ -195,7 +195,7 @@ void insertDB(char *buff)
     char buffer[1024];
 
     char user[40];
-    char area[24];
+    char area[25];
     char area_sensor[25];
     int id_concentrador;
 
@@ -205,8 +205,8 @@ void insertDB(char *buff)
     uint32_t timestamp;
 
     write(1, buff, strlen(buff));
-
-    char *token = strtok(buff, ";");
+    char *line;
+    char *token = strtok_r(buff, ";", &line);
 
     while (token != NULL)
     {
@@ -240,7 +240,7 @@ void insertDB(char *buff)
             break;
         }
         counter++;
-        token = strtok(NULL, ";");
+        token = strtok_r(NULL, ";", &line);
     }
 
     bzero(buffer, 0);
@@ -279,7 +279,31 @@ void insertDB(char *buff)
         }
         else
         {
-            write(1, "Inserido com sucesso\n", 10);
+            write(1, "Inserido com sucesso\n", 23);
+            //update area
+            bzero(buffer, 0);
+            sprintf(buffer, "UPDATE concentrador SET area = '%s' WHERE id = %d", area, id_concentrador);
+
+            if (mysql_query(con, buffer) != 0)
+            {
+                fprintf(stderr, "Query Failure on update\n");
+            }
+            else
+            {
+                write(1, "Update com sucesso\n", 21);
+                //update area sensor
+                bzero(buffer, 0);
+                sprintf(buffer, "UPDATE sensor SET area = '%s' WHERE id = %d", area_sensor, id_sensor);
+
+                if (mysql_query(con, buffer) != 0)
+                {
+                    fprintf(stderr, "Query Failure on update\n");
+                }
+                else
+                {
+                    write(1, "Update com sucesso\n", 21);
+                }
+            }
         }
     }
 }
@@ -328,8 +352,10 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
     if (mysql_query(con, buffer) != 0)
     {
         fprintf(stderr, "Query Failure 4\n");
-    } else{
-        write(1, "Inserido com sucesso\n", 10);
+    }
+    else
+    {
+        write(1, "Inserido com sucesso\n", 23);
     }
 }
 
