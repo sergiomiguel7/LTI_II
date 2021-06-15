@@ -34,3 +34,31 @@ CREATE TABLE dado(
 	FOREIGN KEY(id_sensor) REFERENCES sensor(id), 
 	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
 );
+
+DROP TRIGGER IF EXISTS before_dado;
+
+DELIMITER @
+
+CREATE TRIGGER before_dado BEFORE INSERT ON dado FOR EACH ROW
+BEGIN
+	DECLARE sens int;
+	DECLARE concentr int;
+
+	SELECT id_concentrador INTO concentr
+		FROM concentrador WHERE id_concentrador = new.id_concentrador;
+
+	if(concentrador IS NULL) then
+		INSERT INTO concentrador(id_concentrador,area,id_user) VALUES(new.id_concentrador,NULL,NULL);
+	end if;
+
+	SELECT id_sensor INTO sens
+		FROM sensor WHERE id_sensor = new.id_sensor;
+	
+	if(sens IS NULL) then
+		INSERT INTO sensor(area,id_concentrador) VALUES(NULL,new.id_concentrador);
+	end if;
+END;
+
+@
+
+DELIMITER ;
