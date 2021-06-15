@@ -35,7 +35,7 @@ getValues = async (req, res) => {
         }
         else
             sensores.forEach((sensor) => {
-                DataController.getData("SELECT * FROM dado WHERE id_sensor = ? ORDER BY timestamp DESC", [sensor.id]).then((response) => {
+                DataController.getData("SELECT * FROM dado WHERE id_sensor = ? AND unidade = ? ORDER BY timestamp DESC", [sensor.id, 'L']).then((response) => {
                     //               sensor["data"] = response;
                     tempValues.push(...response);
 

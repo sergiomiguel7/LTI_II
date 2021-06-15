@@ -114,7 +114,7 @@ export class DataVisualComponent implements OnInit {
    * get the values from selected filters
    */
   getValues(event?: any) {
-    let page = event ? event.pageIndex : this.page;
+    let page = event ? event.pageIndex + 1 : this.page;
     let limit = event ? event.pageSize : this.limit;
     let query = `?page=${page}&limit=${limit}`;
 
