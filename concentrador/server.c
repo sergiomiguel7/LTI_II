@@ -16,6 +16,7 @@ void func(int sockfd_TCP, int sockfd_UDP);
 char hostbuffer[256];
 char *IPbuffer;
 char area[12];
+char user[14];
 struct hostent *host_entry;
 int hostname;
 int ID;
@@ -25,6 +26,7 @@ int main(int argc, char* argv[])
 
     strcpy(area, argv[1]);
     ID = atoi(argv[2]);
+    strcpy(user, argv[3]);
     int sockfd_UDP;
     int sockfd_TCP;
     int connfd;

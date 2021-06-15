@@ -79,6 +79,9 @@ void openFiles()
 
 void openServer()
 {
+    char username[14];
+    printf("Username: ");
+    scanf("%s", username);
     char area[12];
     printf("Área associada ao concentrador: ");
     scanf("%s", area);
@@ -90,7 +93,7 @@ void openServer()
 
     if (pid == 0)
     {
-        int err = execl("server.out", "server", area, id, NULL);
+        int err = execl("server.out", "server", area, id,username, NULL);
         if (err)
         {
             perror("exec err");
