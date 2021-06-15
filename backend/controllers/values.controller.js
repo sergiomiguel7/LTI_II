@@ -26,6 +26,8 @@ getValues = async (req, res) => {
         }
 
         let values = [];
+
+        let tempValues = [];
         let counter = 0;
 
         if (sensores.length == 0) {
@@ -33,17 +35,22 @@ getValues = async (req, res) => {
         }
         else
             sensores.forEach((sensor) => {
-                DataController.getData("SELECT * FROM dado WHERE id_sensor = ?", [sensor.id]).then((response) => {
+                DataController.getData("SELECT * FROM dado WHERE id_sensor = ? ORDER BY timestamp DESC", [sensor.id]).then((response) => {
                     //               sensor["data"] = response;
-                    values.push(...response);
+                    tempValues.push(...response);
 
                     counter++;
                     if (counter == sensores.length) {
-                        res.status(200)
-                            .json({
-                                user: req.user,
-                                data: values
-                            });
+
+                        counter = 0;
+                        tempValues.forEach(element => {
+                            if (counter > ((page-1) * limit - 1) && counter < ((page-1) * limit + Number(limit))) {
+                                values.push(element);
+                            }
+                            counter++;
+                        });
+
+                        res.status(200).json({user: req.user,data: values, storedValues: tempValues.length});
                     }
                 });
             });

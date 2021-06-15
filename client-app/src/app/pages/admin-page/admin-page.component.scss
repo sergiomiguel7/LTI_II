@@ -1,0 +1,38 @@
+.data-wrapper{
+    padding: 25px;
+
+    .margin{
+        margin-left: 15px;
+    }
+
+    .action-row{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        .toogle{
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .row{
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+
+        .grow{
+            flex: 1;
+            padding: 10px;
+        }
+    }
+}
+
+@media (max-width: 900px) {
+    .data-wrapper{
+        .row{
+            flex-direction: column;
+        }
+    }
+}

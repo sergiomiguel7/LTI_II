@@ -45,4 +45,8 @@ export class AuthServiceService {
     return $response;
   }
 
+  logout(){
+    localStorage.removeItem("currentUser");
+    this.currentUserSubject.next(null);
+  }
 }

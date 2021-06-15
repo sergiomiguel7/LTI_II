@@ -4,4 +4,6 @@ module.exports = (app) => {
     app.use('/api/concentradores', require('../routes/concentradores'));
     app.use('/api/sensores', require('../routes/sensores'));
     app.use('/api/mqtt', require('./mqtt'));
+    app.use('/api/admin', require('../routes/admin'));
+    
 }

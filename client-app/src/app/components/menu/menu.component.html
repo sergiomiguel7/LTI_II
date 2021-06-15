@@ -6,9 +6,19 @@
         </div>
 
         <div *ngIf="isLoggedIn()" class="menu">
+            <a *ngIf="isAdmin()" routerLink="/admin">
+                <button mat-button>
+                    <span class="sub">Administração</span>
+                </button>   
+            </a>
             <a routerLink="/data-visual">
                 <button mat-button>
                     <span class="sub">Visualização de Dados</span>
+                </button>   
+            </a>
+            <a>
+                <button mat-button (click)="logout()">
+                    <span class="sub">Logout</span>
                 </button>   
             </a>
         </div>

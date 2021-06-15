@@ -116,7 +116,9 @@ export class DataVisualComponent implements OnInit {
   getValues(event?: any) {
     let page = event ? event.pageIndex : this.page;
     let limit = event ? event.pageSize : this.limit;
-    let query = this.idSensor ? `?id_sensor=${this.idSensor}` : '';
+    let query = `?page=${page}&limit=${limit}`;
+
+    this.idSensor ? query+=`&id_sensor=${this.idSensor}` : '';
 
     this.http.get(`http://localhost:5000/api/values/${this.idConcentrador}${query}`).subscribe((data: any) => {
 
