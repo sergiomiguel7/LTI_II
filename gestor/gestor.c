@@ -121,9 +121,14 @@ void *func(void *arg)
                     shutdown(sock, SHUT_RDWR);
                     return 0;
                 }
-                bzero(buff, MAX);
             }
-            insertDB(buff);
+
+            write(1, buff, strlen(buff));
+
+            if(started == 1)
+             //   insertDB(buff);
+            
+
             bzero(buff, MAX);
         }
 
@@ -174,8 +179,11 @@ void insertDB(char *buff)
 {
     MYSQL_RES *res;
     MYSQL_ROW row;
+
+    int user_exist = 1;
+
     int counter = 0;
-    char buffer[212];
+    char buffer[1024];
 
     char user[14];
     char area[12];
@@ -223,35 +231,74 @@ void insertDB(char *buff)
 
     res = mysql_store_result(con);
 
-    if (mysql_query(con, "SELECT id FROM concentrador") == false)
-    {
-        memset(buffer, 0, 212);
-        sprintf(buffer, "INSERT INTO concentrador(area,id_user) VALUES ('%s', '%s')",
-                area, user);
-    }
-
-    if (mysql_query(con, "SELECT id_concentrador FROM sensor") == false)
-    {
-        memset(buffer, 0, 212);
-        sprintf(buffer, "INSERT INTO sensor(area,id_concentrador) VALUES ('%s',%d)",
-                area, id_concentrador);
-    }
-
-    if (mysql_num_rows(res))
-    {
-        
-    }
-
-    memset(buffer, 0, 212);
-    sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%d', %d, %d, '%d')",
-            unidade, valor, id_sensor, id_concentrador, timestamp);
-
-    write(1, buffer, strlen(buffer));
-
+    //GET ID USERNAME
+    sprintf(buffer, "SELECT id FROM user WHERE username = '%s'", user);
     if (mysql_query(con, buffer) != 0)
     {
         fprintf(stderr, "Query Failure\n");
-        exit(0);
     }
+
+    if (mysql_num_rows(res) == 0) //user nao existe
+    {
+        user_exist = 0;
+    }
+    else
+    {
+        user_exist = 1;
+        row = mysql_fetch_row(res);
+        printf("%s", row[0]);
+    }
+
+    mysql_free_result(res);
+
+    if (user_exist == 1)
+    {
+        //VERIFICAR CONCENTRADOR
+        memset(buffer, 0, 1024);
+        sprintf(buffer, "SELECT * FROM concentrador WHERE id = %d", id_concentrador);
+
+        if (mysql_query(con, buffer) != 0)
+        {
+            fprintf(stderr, "Query Failure\n");
+        }
+
+        if (mysql_num_rows(res) == 0) //concentrador não existe, inserir
+        {
+            memset(buffer, 0, 1024);
+            sprintf(buffer, "INSERT INTO concentrador(area,id_user) VALUES ('%s', '%s')",
+                    area, user);
+        }
+
+        //VERIFICAR SENSOR
+        memset(buffer, 0, 1024);
+        sprintf(buffer, "SELECT * FROM sensor WHERE id = %d", id_sensor);
+
+        if (mysql_query(con, buffer) != 0)
+        {
+            fprintf(stderr, "Query Failure\n");
+        }
+
+        if (mysql_num_rows(res) == 0) //sensor não existe, inserir
+        {
+            memset(buffer, 0, 1024);
+            sprintf(buffer, "INSERT INTO sensor(area,id_concentrador) VALUES ('%s',%d)",
+                    area, id_concentrador);
+        }
+
+        //INSERIR DADO
+
+        memset(buffer, 0, 1024);
+        sprintf(buffer, "INSERT INTO dado(id,unidade,valor,id_sensor,id_concentrador,timestamp) VALUES ('%s', '%d', %d, %d, '%d')",
+                unidade, valor, id_sensor, id_concentrador, timestamp);
+
+        write(1, buffer, strlen(buffer));
+
+        if (mysql_query(con, buffer) != 0)
+        {
+            fprintf(stderr, "Query Failure\n");
+            exit(0);
+        }
+    }
+
     mysql_close(con);
 }
