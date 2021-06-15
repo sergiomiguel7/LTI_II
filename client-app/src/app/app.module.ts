@@ -11,6 +11,7 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle'
 import { MatSortModule } from '@angular/material/sort';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatSelectModule} from '@angular/material/select';
+import {MatDialogModule} from '@angular/material/dialog';
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -23,6 +24,9 @@ import { LoginComponent } from './pages/login/login.component';
 import { AdminPageComponent } from './pages/admin-page/admin-page.component';
 
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { SignupComponent } from './pages/signup/signup.component';
+import { MotionDetectionComponent } from './pages/motion-detection/motion-detection.component';
+import { EditConcentradorComponent } from './components/edit-concentrador/edit-concentrador.component';
 
 
 @NgModule({
@@ -32,7 +36,10 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     LayoutComponent,
     MenuComponent,
     LoginComponent,
-    AdminPageComponent
+    AdminPageComponent,
+    SignupComponent,
+    MotionDetectionComponent,
+    EditConcentradorComponent
   ],
   imports: [
     BrowserModule,
@@ -49,7 +56,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     MatSortModule,
     FormsModule,
     ReactiveFormsModule,
-    MatSelectModule
+    MatSelectModule,
+    MatDialogModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

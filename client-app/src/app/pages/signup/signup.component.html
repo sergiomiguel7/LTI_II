@@ -1,0 +1,24 @@
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-wrapper">
+
+    <div class="header">
+        <h1>Comece a utilizar o nosso serviço 😀</h1>
+        <h3>Faça o seu registo e junte-se a nós.</h3>
+    </div>
+
+    <div class="card">
+
+        <div class="input-group">
+            <input type="text" placeholder="username" formControlName="username">
+        </div>
+
+        <div class="input-group">
+            <input type="password" placeholder="********" formControlName="password">
+        </div>
+
+        <button [disabled]="registerForm.invalid" class="btn small">
+            <span translate>Registar</span></button>
+
+        <span class="signup" (click)="goToLogin()">Voltar ao menu de login.</span>
+    </div>
+
+</form>
