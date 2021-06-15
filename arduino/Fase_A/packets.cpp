@@ -57,34 +57,6 @@ void data1Packet(uint8_t packet[] , uint32_t tsp) {
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-  DATA2 -> [ TPM (1 byte) | ISS (1 byte) | TSP (4 bytes) | TGM (1 byte) | VAL (1 byte) ]
-
-  TPM -> Tipo de mensagem
-  TSP -> Timestamp no momento de envio
-  TGM -> Tipo de grandeza medida
-  VAL -> Valor medido
-
-  -----//-----  -----//-----  -----//-----
-
-  packet[] -> pacote no qual vai ser adicionada a informação
-  tsp -> Valor do timestamp atual
-  state -> Estado do tipo inteiro, devolve 0 no caso de LOW e 1 no caso de HIGH
-*/
-/*
-void data2Packet(uint8_t packet[] , uint32_t tsp, int state) {
-  packet[0] = DATA2;
-  packet[1] = ISS;
-  split32(&packet[2] , tsp);
-  packet[6] = 'S';
-  packet[7] = state;
-}
-*/
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 /*
   ERROR -> [ TPM (1 byte) | ISS (1 byte) | TSP (4 bytes) | ERR (1 byte) ]
 

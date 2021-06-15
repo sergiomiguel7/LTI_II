@@ -14,9 +14,9 @@ uint8_t dataPacket[128];
 int pos = 0;
 
 EspMQTTClient client(
-  "NOS-97E0",
-  "6b887270b6c1",
-  "192.168.1.5",  // MQTT Broker server ip
+  "-----",
+  "-----",
+  "192.168.-.-",  // MQTT Broker server ip
   "ISS_1",    // Client name that uniquely identify your device
   1883              // The MQTT port, default to 1883. this line can be omitted
 );
@@ -62,7 +62,7 @@ void setup() {
 void onConnectionEstablished()
 {
   client.subscribe(TOPICSUB, [](const String & payload) {
-    Serial.println(payload);
+    Serial.println("Mensagem Recebida: Tópico: \"" + TOPICSUB + "\"; Payload: " + messag);
     ledC = payload.toInt();
     switch (ledC) {
       case 0:
@@ -79,17 +79,6 @@ void onConnectionEstablished()
 
 void loop() {
   client.loop();
-
-  int pirStat2 = digitalRead(pirPin);
-
-    if (pirStat2 == HIGH && var == false) {
-    var = true;
-    String messag = String(ISS) + ";" + String(currentTimestamp())+";1";
-    client.publish(TOPICPUB, messag);
-    }
-    if (pirStat2 == false)
-    var = false;
-
     
   if (SerialBT.available()) {
     //ler trama
@@ -99,8 +88,6 @@ void loop() {
       reseting();
       startPacket(aux, &startTS, &pa);
       data1Packet(dataPacket, currentTimestamp());
-
-      Serial.println((String)"Timestamp inicial " + startTS);
 
       bool erros = false;
 
@@ -187,9 +174,6 @@ void sensorSystem() {
   float converted = val / (current * 1000);
   float lux = pow(10, ((log10(converted) - 1.7782) / -5));
 
-  Serial.println((String)"Posição: " + pos + " Valor do LDR: " + ldrValue + " Tensão: " + voltage_value + " Lux: " + lux);
-  Serial.println((String)"Timestamp: " + currentTimestamp());
-
   if (pirStat == HIGH) {
     if (voltage_value <= 2.0) {
       led = 1;
@@ -199,9 +183,8 @@ void sensorSystem() {
     led = conditions(led);
 
     if (var == false) {
-      /*data2Packet(aux, currentTimestamp(), led); Não envia mais a trama do tipo 2
-        SerialBT.write(aux, DATA2PACKETSIZE);*/
       String messag = String(ISS) + ";" + String(currentTimestamp() + ";" + String(led));
+      Serial.println("Mensagem Publicada: Tópico: \"" + TOPICPUB + "\"; Payload: " + messag);
       client.publish(TOPICPUB, messag);
     }
     var = true;
