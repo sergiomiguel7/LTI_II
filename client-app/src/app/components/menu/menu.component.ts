@@ -12,7 +12,7 @@ export class MenuComponent implements OnInit {
 
   user: User;
 
-  constructor(private authService: AuthServiceService,
+  constructor(public authService: AuthServiceService,
     private router: Router) {
     this.user = authService.getLoggedInUser();
    }

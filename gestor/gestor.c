@@ -204,7 +204,7 @@ void insertDB(char *buff)
     int id_sensor;
     uint32_t timestamp;
 
-    write(1, buff, strlen(buff));
+    //write(1, buff, strlen(buff));
     char *line;
     char *token = strtok_r(buff, ";", &line);
 
@@ -280,10 +280,9 @@ void insertDB(char *buff)
         else
         {
             write(1, "Inserido com sucesso\n", 23);
-
-            //update area sensor
+            //update concentrador
             bzero(buffer, 0);
-            sprintf(buffer, "UPDATE sensor SET area = '%s' WHERE id = %d", area_sensor, id_sensor);
+            sprintf(buffer, "UPDATE concentrador SET id_user = %d WHERE id = %d", id_user, id_concentrador);
 
             if (mysql_query(con, buffer) != 0)
             {
@@ -291,7 +290,19 @@ void insertDB(char *buff)
             }
             else
             {
-                write(1, "Update com sucesso\n", 21);
+                write(1, "Update 1 com sucesso\n", 23);
+                //update area sensor
+                bzero(buffer, 0);
+                sprintf(buffer, "UPDATE sensor SET area = '%s' WHERE id = %d", area_sensor, id_sensor);
+
+                if (mysql_query(con, buffer) != 0)
+                {
+                    fprintf(stderr, "Query Failure on update\n");
+                }
+                else
+                {
+                    write(1, "Update 2 com sucesso\n", 23);
+                }
             }
         }
     }

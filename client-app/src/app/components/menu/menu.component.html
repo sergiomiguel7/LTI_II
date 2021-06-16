@@ -6,7 +6,7 @@
         </div>
 
         <div *ngIf="isLoggedIn()" class="menu">
-            <a *ngIf="isAdmin()" routerLink="/admin">
+            <a *ngIf="authService.getLoggedInUser()?.role == 'admin'" routerLink="/admin">
                 <button mat-button>
                     <span class="sub">Administração</span>
                 </button>   

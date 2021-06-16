@@ -14,14 +14,14 @@ CREATE TABLE concentrador(
 	id int AUTO_INCREMENT PRIMARY KEY,
 	area varchar(25),
 	id_user int,
-	FOREIGN KEY(id_user) REFERENCES user(id)
+	FOREIGN KEY(id_user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE sensor(
 	id int AUTO_INCREMENT PRIMARY KEY,
 	area varchar(25),
 	id_concentrador int,
-	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
+	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id) ON DELETE CASCADE
 );
 
 CREATE TABLE dado(
@@ -31,8 +31,8 @@ CREATE TABLE dado(
 	id_sensor int,
 	id_concentrador int,
 	timestamp varchar(10),
-	FOREIGN KEY(id_sensor) REFERENCES sensor(id), 
-	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id)
+	FOREIGN KEY(id_sensor) REFERENCES sensor(id) ON DELETE CASCADE, 
+	FOREIGN KEY(id_concentrador) REFERENCES concentrador(id) ON DELETE CASCADE
 );
 
 DROP TRIGGER IF EXISTS before_dado;
